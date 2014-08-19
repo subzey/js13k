@@ -2,10 +2,11 @@
 <script>
 var titles = ['Void'];
 
-var TILE_AIR   = parseInt('00001', 2);
-var TILE_EARTH = parseInt('00010', 2);
-var TILE_FIRE  = parseInt('00100', 2);
-var TILE_WATER = parseInt('01000', 2);
+var TILE_EARTH = parseInt('00001', 2);
+var TILE_WATER = parseInt('00010', 2);
+var TILE_AIR   = parseInt('00100', 2);
+var TILE_FIRE  = parseInt('01000', 2);
+var TILE_QUINTESSENCE = parseInt('10000', 2);
 
 titles[TILE_AIR] = 'Air';
 titles[TILE_FIRE] = 'Fire';
@@ -25,6 +26,8 @@ titles[TILE_AIR + TILE_EARTH + TILE_WATER] = 'Golem';
 titles[TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Oil';
 
 titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Life';
+
+titles[TILE_QUINTESSENCE] = 'Quintessence';
 
 
 function createTile(code){
@@ -57,26 +60,37 @@ function createTile(code){
 			drawPosition & 2 && (3 - drawPosition) * 2 - 1
 		);
 
-		c.globalAlpha = drawPosition ^ 1 ? 0.3 : .9;
+		c.globalAlpha = drawPosition ^ 1 ? 0.3 : .7;
 
 		c.font = '16px';
 		c.textAlign = 'center';
 		c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
 		c.fillText(titles[code], 40, 70);
 
-		for (var bit = 5; bit--; ){
-			c.translate(40, 40);
-			c.rotate(Math.PI / 2);
-			c.translate(-40, -40);
+		if (code & 16){
+			c.beginPath();
+			c.arc(40, 40, 8, 0, Math.PI * 2, false);
+			if (drawPosition == 1){
+				c.fillStyle = '#FFF';
+			}
+			c.fill();
+		}
+
+		for (var bit = 4; bit--; ){
 			if (code & (1<<bit)){
 				c.beginPath();
 				c.moveTo(0,0);
 				c.lineTo(0,35);
 				c.bezierCurveTo(10,35,-4,5,12,12);
 				c.bezierCurveTo(5,-4,35,10,35,0);
-				c.fillStyle = (drawPosition == 1) ? ['#DD0', '#0C0', '#C00', '#00C'][bit] : (drawPosition & 1) ? '#000' : '#FFF';
+				if (drawPosition == 1){
+					c.fillStyle = ['#0B0', '#00C', '#DD0', '#C00'][bit];
+				}
 				c.fill();
 			}
+			c.translate(40, 40);
+			c.rotate(Math.PI / 2);
+			c.translate(-40, -40);
 		}
 		c.restore();
 	}
@@ -85,7 +99,7 @@ function createTile(code){
 
 
 // Demo
-for (var i=0; i<16; i++){
+for (var i=0; i<32; i++){
 	var tile = createTile(i);
 	tile.style.float = 'left';
 	tile.style.margin = '2px';
