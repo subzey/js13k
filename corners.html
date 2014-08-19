@@ -112,6 +112,23 @@ function createTile(code){
 				60, 25
 			);
 		}
+		if (code == 3) { // Mud
+			c.moveTo(26, 40);
+			c.bezierCurveTo(
+				11, 40,
+				16, 55,
+				46, 45
+			);
+			c.bezierCurveTo(
+				66, 45,
+				66, 40,
+				56, 40
+			);
+			c.moveTo(53, 35);
+			c.arc(49, 35, 4, 0, Math.PI * 2, false);
+			c.moveTo(40, 30);
+			c.arc(33, 30, 7, 0, Math.PI * 2, false)
+		}
 		if (code == 4) { // Air
 			c.moveTo(20, 35);
 			c.bezierCurveTo(
