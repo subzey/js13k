@@ -64,9 +64,96 @@ function createTile(code){
 
 		c.font = '16px';
 		c.textAlign = 'center';
-		c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
+		c.strokeStyle = c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
 		c.fillText(titles[code], 40, 70);
 
+		// Draw icons
+		c.beginPath();
+		c.lineWidth = 2;
+		if (code == 1){ // Earth
+			c.moveTo(20, 50);
+
+			c.bezierCurveTo(
+				35, 10,
+				35, 10,
+				50, 50
+			);
+
+			c.bezierCurveTo(
+				50, 50,
+				50, 55,
+				35, 55
+			);
+
+			c.moveTo(50, 35);
+			c.bezierCurveTo(
+				55, 25,
+				65, 50,
+				65, 50
+			);
+		}
+		if (code == 2){ // Water
+			c.moveTo(20, 45);
+			c.bezierCurveTo(
+				40, 60,
+				40, 30,
+				60, 45
+			);
+			c.moveTo(20, 35);
+			c.bezierCurveTo(
+				40, 50,
+				40, 20,
+				60, 35
+			);
+			c.moveTo(20, 25);
+			c.bezierCurveTo(
+				40, 40,
+				40, 10,
+				60, 25
+			);
+		}
+		if (code == 4) { // Air
+			c.moveTo(20, 35);
+			c.bezierCurveTo(
+				20, 32,
+				60, 38,
+				60, 35
+			);
+			c.moveTo(20, 27);
+			c.bezierCurveTo(
+				60, 27,
+				65, 17,
+				50, 17
+			);
+			c.moveTo(20, 43);
+			c.bezierCurveTo(
+				60, 43,
+				65, 53,
+				50, 53
+			);
+		}
+		if (code == 8){ // Fire
+			c.moveTo(25, 40);
+			c.bezierCurveTo(
+				25, 60,
+				55, 60,
+				55, 40
+			);
+			c.bezierCurveTo(
+				55, 30,
+				40, 25,
+				40, 15
+			);
+			c.bezierCurveTo(
+				30, 25,
+				45, 40,
+				40, 40
+			);
+		}
+		c.stroke();
+
+
+		// Draw elelment hints
 		if (code & 16){
 			c.beginPath();
 			c.arc(40, 40, 8, 0, Math.PI * 2, false);
