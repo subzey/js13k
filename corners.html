@@ -22,24 +22,43 @@ function createTile(code){
 	c.putImageData(imageData, 0, 0);
 
 	c.globalCompositeOperation = 'source-atop';
+	for (var drawPosition = 6; --drawPosition;){ // Note the pre-increment. drawPosition is in range 5..1
+		c.save();
 
-	for (var bit = 5; bit--; ){
-		c.translate(40, 40);
-		c.rotate(Math.PI / 2);
-		c.translate(-40, -40);
-		if (code & (1<<bit)){
-			c.beginPath();
-			c.moveTo(0,0);
-			c.lineTo(0,35);
-			c.bezierCurveTo(10,35,-4,5,12,12);
-			c.bezierCurveTo(5,-4,35,10,35,0);
-			c.fillStyle = ['#DD0', '#0C0', '#C00', '#00C'][bit];
-			c.fill();
+		c.translate(
+			drawPosition & 4 && (5 - drawPosition) * 2 - 1,
+			drawPosition & 2 && (3 - drawPosition) * 2 - 1
+		);
+
+		c.globalAlpha = drawPosition ^ 1 ? 0.3 : .9;
+
+		for (var bit = 5; bit--; ){
+			c.translate(40, 40);
+			c.rotate(Math.PI / 2);
+			c.translate(-40, -40);
+			if (code & (1<<bit)){
+				c.beginPath();
+				c.moveTo(0,0);
+				c.lineTo(0,35);
+				c.bezierCurveTo(10,35,-4,5,12,12);
+				c.bezierCurveTo(5,-4,35,10,35,0);
+				c.fillStyle = (drawPosition == 1) ? ['#DD0', '#0C0', '#C00', '#00C'][bit] : (drawPosition & 1) ? '#000' : '#FFF';
+				c.fill();
+			}
 		}
+		c.restore();
 	}
 	return a;
 };
 
-document.body.appendChild(createTile(parseInt('00101', 2)));
+
+// Demo
+for (var i=0; i<16; i++){
+	var tile = createTile(i);
+	tile.style.float = 'left';
+	tile.style.margin = '2px';
+	document.body.appendChild(tile);
+}
+
 
 </script>
