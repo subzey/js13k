@@ -1,0 +1,45 @@
+<body bgcolor=#66686f>
+<script>
+function createTile(code){
+	var a = document.createElement('canvas');
+	a.width=80;
+	a.height=80;
+	var c=a.getContext('2d');
+	var imageData=c.createImageData(80,80);
+	for (var idx=6400; idx--; ){
+		var y = (idx / 80 | 0) - 39.5;
+		var x = idx % 80 - 39.5;
+
+		var value = Math.random() * 16 | 160; // 0xA0...0xAF integer
+		value -= (x*x*x)/1200;
+		value -= (y*y*y)/1200;
+
+		imageData.data[idx*4] = value;
+		imageData.data[idx*4+1] = value-=5;
+		imageData.data[idx*4+2] = value-=15;
+		imageData.data[idx*4+3] = 9000 - (x*x+y*y)*3;
+	}
+	c.putImageData(imageData, 0, 0);
+
+	c.globalCompositeOperation = 'source-atop';
+
+	for (var bit = 5; bit--; ){
+		c.translate(40, 40);
+		c.rotate(Math.PI / 2);
+		c.translate(-40, -40);
+		if (code & (1<<bit)){
+			c.beginPath();
+			c.moveTo(0,0);
+			c.lineTo(0,35);
+			c.bezierCurveTo(10,35,-4,5,12,12);
+			c.bezierCurveTo(5,-4,35,10,35,0);
+			c.fillStyle = ['#DD0', '#0C0', '#C00', '#00C'][bit];
+			c.fill();
+		}
+	}
+	return a;
+};
+
+document.body.appendChild(createTile(parseInt('00101', 2)));
+
+</script>
