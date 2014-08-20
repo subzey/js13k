@@ -175,12 +175,12 @@ function createTile(code){
 			c.moveTo(32, 25);
 			c.bezierCurveTo(
 				20, 20,
-				15, 40,
-				20, 40
+				15, 38,
+				20, 38
 			);
-			c.lineTo(60, 40);
+			c.lineTo(60, 38);
 			c.bezierCurveTo(
-				65, 40,
+				65, 38,
 				63, 8,
 				45, 19
 			);
@@ -190,15 +190,53 @@ function createTile(code){
 				32, 23,
 				32, 30
 			);
-			c.moveTo(32, 44);
-			c.lineTo(28, 53);
+			c.moveTo(32, 42);
+			c.lineTo(28, 51);
 
-			c.moveTo(42, 44);
-			c.lineTo(37, 55);
+			c.moveTo(42, 42);
+			c.lineTo(37, 53);
 
-			c.moveTo(52, 44);
-			c.lineTo(48, 53);
+			c.moveTo(52, 42);
+			c.lineTo(48, 51);
 
+		}
+		if (code == 7) { // Golem
+			c.moveTo(20, 55);
+			c.bezierCurveTo(
+				20, 35,
+				25, 40,
+				30, 35
+			);
+			c.bezierCurveTo(
+				38, 30,
+				25, 20,
+				40, 20
+			);
+
+			c.bezierCurveTo(
+				55, 20,
+				42, 30,
+				50, 35
+			);
+			c.bezierCurveTo(
+				55, 40,
+				60, 35,
+				60, 55
+			);
+
+			c.moveTo(31, 55);
+			c.bezierCurveTo(
+				31, 45,
+				28, 46,
+				27, 46
+			);
+
+			c.moveTo(49, 55);
+			c.bezierCurveTo(
+				49, 45,
+				52, 46,
+				53, 46
+			);
 		}
 		if (code == 8){ // Fire
 			c.moveTo(25, 40);
