@@ -267,6 +267,29 @@ function createTile(code){
 			c.lineTo(68, 47);
 			c.lineTo(50, 55);
 		}
+		if (code == 10){ // Alcohol
+			c.moveTo(32, 17);
+			c.bezierCurveTo(
+				38, 17,
+				37, 17,
+				37, 35
+			);
+			c.bezierCurveTo(
+				20, 47,
+				15, 52,
+				40, 52
+			);
+			c.bezierCurveTo(
+				65, 52,
+				60, 47,
+				43, 35
+			);
+			c.bezierCurveTo(
+				43, 17,
+				42, 17,
+				48, 17
+			)
+		}
 
 		c.stroke();
 
