@@ -171,6 +171,35 @@ function createTile(code){
 				65, 50
 			);
 		}
+		if (code == 6){ // Rain
+			c.moveTo(32, 25);
+			c.bezierCurveTo(
+				20, 20,
+				15, 40,
+				20, 40
+			);
+			c.lineTo(60, 40);
+			c.bezierCurveTo(
+				65, 40,
+				63, 8,
+				45, 19
+			);
+			c.moveTo(48, 27);
+			c.bezierCurveTo(
+				48, 17,
+				32, 23,
+				32, 30
+			);
+			c.moveTo(32, 44);
+			c.lineTo(28, 53);
+
+			c.moveTo(42, 44);
+			c.lineTo(37, 55);
+
+			c.moveTo(52, 44);
+			c.lineTo(48, 53);
+
+		}
 		if (code == 8){ // Fire
 			c.moveTo(25, 40);
 			c.bezierCurveTo(
