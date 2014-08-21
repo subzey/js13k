@@ -354,7 +354,7 @@ function createTile(code){
 			c.lineTo(50, 15);
 			c.lineTo(40, 14);
 		}
-		if (code == 15) {
+		if (code == 15) { // Life
 			c.moveTo(43, 19);
 			c.bezierCurveTo(
 				48, 13,
@@ -377,6 +377,9 @@ function createTile(code){
 				45, 35
 			);
 		}
+		if (code == 16) { // Quintessence
+			c.arc(40, 40, 23, 2.5, 6.9, false);
+		}
 
 		c.stroke();
 
@@ -386,7 +389,7 @@ function createTile(code){
 			c.beginPath();
 			c.arc(40, 40, 8, 0, Math.PI * 2, false);
 			if (drawPosition == 1){
-				c.fillStyle = '#FFF';
+				c.fillStyle = '#C0C';
 			}
 			c.fill();
 		}
