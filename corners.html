@@ -290,6 +290,36 @@ function createTile(code){
 				48, 17
 			)
 		}
+		if (code == 11){ // Oil
+			c.moveTo(25, 18);
+			c.bezierCurveTo(
+				25, 10,
+				55, 10,
+				55, 18
+			);
+			c.bezierCurveTo(
+				55, 26,
+				25, 26,
+				25, 18
+			);
+			c.moveTo(55, 48);
+			c.bezierCurveTo(
+				55, 56,
+				25, 56,
+				25, 48
+			);
+			c.moveTo(27, 47);
+			c.lineTo(27, 24);
+			c.moveTo(53, 47);
+			c.lineTo(53, 24);
+
+			c.moveTo(40, 30);
+			c.bezierCurveTo(
+				30, 50,
+				50, 50,
+				40, 30
+			);
+		}
 
 		c.stroke();
 
