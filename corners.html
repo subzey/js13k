@@ -290,7 +290,7 @@ function createTile(code){
 				48, 17
 			)
 		}
-		if (code == 11){ // Oil
+		if (code == 11){ // Oil. Barrel of oil, or lantern - pick yourself
 			c.moveTo(25, 18);
 			c.bezierCurveTo(
 				25, 10,
@@ -319,6 +319,20 @@ function createTile(code){
 				50, 50,
 				40, 30
 			);
+		}
+		if (code == 12){ // Phlogiston
+			c.moveTo(37, 10);
+			c.bezierCurveTo(
+				47, 20,
+				17, 35,
+				37, 45
+			)
+			c.moveTo(43, 54);
+			c.bezierCurveTo(
+				33, 44,
+				63, 29,
+				43, 19
+			)
 		}
 
 		c.stroke();
