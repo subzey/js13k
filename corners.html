@@ -335,14 +335,24 @@ function createTile(code){
 			)
 		}
 		if (code == 13){ // Diamond
-			c.moveTo(48, 33);
-			c.lineTo(32, 33);
-			c.lineTo(20, 30);
-			c.lineTo(30, 20);
-			c.lineTo(50, 20);
-			c.lineTo(60, 30);
-			c.lineTo(40, 55);
-			c.lineTo(23, 35);
+			c.moveTo(48, 30);
+			c.lineTo(32, 30);
+			c.lineTo(20, 27);
+			c.lineTo(30, 17);
+			c.lineTo(50, 17);
+			c.lineTo(60, 27);
+			c.lineTo(40, 52);
+			c.lineTo(23, 32);
+		}
+		if (code == 14){
+			c.moveTo(35, 13);
+			c.lineTo(30, 33); // / down
+			c.lineTo(40, 35); // - down
+			c.lineTo(31, 51); // / down
+			c.lineTo(55, 31); // / up
+			c.lineTo(42, 28); // - up
+			c.lineTo(50, 15); // / up
+			c.lineTo(40, 14);
 		}
 
 		c.stroke();
