@@ -344,15 +344,38 @@ function createTile(code){
 			c.lineTo(40, 52);
 			c.lineTo(23, 32);
 		}
-		if (code == 14){
+		if (code == 14){ // Lightning
 			c.moveTo(35, 13);
-			c.lineTo(30, 33); // / down
-			c.lineTo(40, 35); // - down
-			c.lineTo(31, 51); // / down
-			c.lineTo(55, 31); // / up
-			c.lineTo(42, 28); // - up
-			c.lineTo(50, 15); // / up
+			c.lineTo(30, 33);
+			c.lineTo(40, 35);
+			c.lineTo(31, 51);
+			c.lineTo(55, 31);
+			c.lineTo(42, 28);
+			c.lineTo(50, 15);
 			c.lineTo(40, 14);
+		}
+		if (code == 15) {
+			c.moveTo(43, 19);
+			c.bezierCurveTo(
+				48, 13,
+				55, 13,
+				60, 18
+			);
+			c.bezierCurveTo(
+				75, 33,
+				40, 53,
+				40, 53
+			);
+			c.bezierCurveTo(
+				40, 53,
+				5, 33,
+				20, 18
+			);
+			c.bezierCurveTo(
+				40, 8,
+				45, 31,
+				45, 35
+			);
 		}
 
 		c.stroke();
