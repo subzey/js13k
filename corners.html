@@ -29,6 +29,8 @@ titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Life';
 
 titles[TILE_QUINTESSENCE] = 'Quintessence';
 
+titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER + TILE_QUINTESSENCE] = 'Harmony';
+
 
 function createTile(code){
 	var a = document.createElement('canvas');
@@ -65,7 +67,7 @@ function createTile(code){
 		c.font = '16px';
 		c.textAlign = 'center';
 		c.strokeStyle = c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
-		c.fillText(titles[code], 40, 70);
+		c.fillText([titles[code]], 40, 70);
 
 		// Draw icons
 		c.beginPath();
@@ -388,8 +390,8 @@ function createTile(code){
 		if (code & 16){
 			c.beginPath();
 			c.arc(40, 40, 8, 0, Math.PI * 2, false);
-			if (drawPosition == 1){
-				c.fillStyle = '#C0C';
+			if (drawPosition == 1 && code != 31){
+				c.fillStyle = '#FFF';
 			}
 			c.fill();
 		}
@@ -401,7 +403,7 @@ function createTile(code){
 				c.lineTo(0,35);
 				c.bezierCurveTo(10,35,-4,5,12,12);
 				c.bezierCurveTo(5,-4,35,10,35,0);
-				if (drawPosition == 1){
+				if (drawPosition == 1 && code != 31){
 					c.fillStyle = ['#0B0', '#00C', '#DD0', '#C00'][bit];
 				}
 				c.fill();
