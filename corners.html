@@ -397,6 +397,37 @@ function createTile(code){
 		}
 
 		for (var bit = 4; bit--; ){
+			// Draw special Q tiles
+			c.beginPath();
+			if (code > 16 && code < 31){
+				if (bit & 1 ? code & TILE_AIR : code & TILE_WATER){
+					c.moveTo(40, 8);
+					c.bezierCurveTo(
+						48, 33,
+						32, 33,
+						40, 8
+					);
+				}
+				if (code & TILE_FIRE) {
+					c.moveTo(25, 25);
+					c.bezierCurveTo(
+						25, 40,
+						40, 30,
+						25, 25
+					);
+				}
+				if (code & TILE_EARTH){
+					c.moveTo(11, 31);
+					c.bezierCurveTo(
+						7, 27,
+						27, 7,
+						31, 11
+					);
+					c.lineTo(11, 31)
+				}
+			}
+			c.stroke();
+
 			if (code & (1<<bit)){
 				c.beginPath();
 				c.moveTo(0,0);
