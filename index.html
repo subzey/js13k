@@ -488,6 +488,12 @@ function createTile(code){
 	return a;
 };
 
+function getNewTileIndex(){
+	return (Math.random() * 16 | 0) + 1;
+}
+
+var blockingAnimations = [];
+
 var field = [];
 
 var tiles = [];
@@ -496,18 +502,104 @@ for (var i=64; i--; ){
 }
 
 for (var i=64; i--; ){
-	field.push((Math.random() * 16 | 0) + 1);
+	// field.push(getNewTileIndex());
 }
+
+field[0] = 0;
+field[1] = 0;
+field[9] = 0;
+field[63] = 0;
 
 c=a.getContext('2d');
+var boardImage = createField();
 
-c.drawImage(createField(),0,0);
-
-for (var i=0; i<8; i++){
-	for (var j=0; j<8; j++){
-		c.drawImage(tiles[field[i*8 + j]], i * 90 + 7, j * 90 + 7);
+function animationFalling(descriptor){
+	var x = descriptor.affectedTiles % 8; // Affected tiles array contains only one value, it is safe do do this trick
+	var yStart = descriptor.fallFrom;
+	var yEnd = descriptor.affectedTiles / 8 | 0;
+	var timeElapsed = new Date - descriptor.timestamp;
+	var y = (timeElapsed * timeElapsed) / 2e5 + yStart; // Tile moves with acceleration
+	if (y < yEnd){
+		c.drawImage(tiles[field[descriptor.affectedTiles]], x * 90 + 7, y * 90 + 7);
+		return 1;
 	}
 }
+
+function gravity(){
+	var animationTransaction = [];
+	var offscreenStack = []; // Tiles that are falling offscreen
+	var now = +new Date();
+	for (var i = 64; i--;){ // Lower 7 rows
+		if (!field[i]){ // Field is empty
+			for (var j=i; j>=0; j-=8){
+				if (field[j]){ // Tile found on board
+					field[i] = field[j]; // Move tile
+					field[j] = field[0];
+					var fallFrom = j / 8 | 0;
+					break;
+				}
+			}
+			if (!field[i]){ // No tiles was found that can fall
+				field[i] = getNewTileIndex(); // Create new tile
+				var column = i % 8;
+				fallFrom = (offscreenStack[column] = ~-offscreenStack[column]) * 1.5 + Math.random()*.25; // Decide from what position it would fall
+			}
+			animationTransaction.push({
+				'fn': animationFalling, // Type of animation
+				'affectedTiles': [i], // Tiles that are affected (always an array)
+				'timestamp': now, // Start of the animation
+				'fallFrom': fallFrom // custom for "gravity" - where tile is fall from
+			});
+		}
+	}
+	if (animationTransaction[0]){ // There's something to animate
+		blockingAnimations.push(animationTransaction);
+		return 1; // Return code - field is changed
+	}
+}
+
+function draw(){
+	a.width=724;
+	// Get tiles that are blocked by animations
+	var blockedTiles = [];
+	for (var i=blockingAnimations.length; i--; ){
+		var animationTransaction = blockingAnimations[i];
+		for (var j=animationTransaction.length; j--; ){
+			var animation = animationTransaction[j];
+			if (animation.fn(animation)){
+				// Animation returned true. We don't need to draw affeted tiles
+				blockedTiles = blockedTiles.concat(animation.affectedTiles || []);
+			} else {
+				// Animation is ended or expired
+				animationTransaction.splice(j, 1);
+			}
+		}
+		if (!animationTransaction[0]){
+			blockingAnimations.splice(i, 1);
+		}
+	}
+
+	// Draw not blocked tiles
+	for (var i=64; i--; ){
+		if (!~blockedTiles.indexOf(i)){
+			var x = i % 8;
+			var y = i / 8 | 0;
+			c.drawImage(tiles[field[i]], x * 90 + 7, y * 90 + 7);
+		}
+	}
+}
+
+gravity();
+
+function _onAnimationFrame(){
+	if (blockingAnimations[0]){
+		draw();
+	}
+	requestAnimationFrame(_onAnimationFrame);
+}
+
+_onAnimationFrame();
+
 
 </script>
 
