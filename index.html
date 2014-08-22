@@ -1,1 +1,513 @@
-<body>
+<body bgcolor=0><canvas id="a" width=724 height=724></canvas>
+<script>
+function createField(){
+	var TILE_WIDTH = 80;
+	var CELL_PADDING = 2;
+	var CELL_BORDER = 1;
+	var CELL_MARGIN = 4;
+	var cell = CELL_PADDING + TILE_WIDTH + CELL_PADDING;
+	var cellInterval = CELL_BORDER + cell + CELL_BORDER + CELL_MARGIN;
+
+	var size = 8 * (CELL_BORDER + cell + CELL_BORDER) + (8+1) * CELL_MARGIN;
+
+	var a = document.createElement('canvas');
+	a.width=size;
+	a.height=size;
+	var c=a.getContext('2d');
+	var imageData=c.createImageData(size,size);
+	for (var idx=size * size; idx--; ){
+		var xPhase = idx % size % cellInterval - CELL_MARGIN;
+		var yPhase = (idx / size % cellInterval | 0) - CELL_MARGIN;
+		 // Board acts like background, it should be darker and more bluish
+		var value = Math.random() * 12 | 96; // 0x60...0x6B integer
+
+		if (xPhase >= 0 & yPhase >= 0){
+			value -= 20;
+			if (xPhase == 0 || yPhase == 0){
+				value -= 30;
+			}
+			if (xPhase == CELL_BORDER + cell || yPhase == CELL_BORDER + cell){
+				value += 30;
+			}
+		}
+
+		imageData.data[idx*4] = value;
+		imageData.data[idx*4+1] = value+=3;
+		imageData.data[idx*4+2] = value+=5;
+		imageData.data[idx*4+3] = 255;
+	}
+	c.putImageData(imageData, 0, 0);
+	return a;
+};
+
+var titles = ['Void'];
+
+var TILE_EARTH = parseInt('00001', 2);
+var TILE_WATER = parseInt('00010', 2);
+var TILE_AIR   = parseInt('00100', 2);
+var TILE_FIRE  = parseInt('01000', 2);
+var TILE_QUINTESSENCE = parseInt('10000', 2);
+
+titles[TILE_AIR] = 'Air';
+titles[TILE_FIRE] = 'Fire';
+titles[TILE_EARTH] = 'Earth';
+titles[TILE_WATER] = 'Water';
+
+titles[TILE_AIR + TILE_FIRE] = 'Phlogiston';
+titles[TILE_AIR + TILE_EARTH] = 'Sand';
+titles[TILE_AIR + TILE_WATER] = 'Rain';
+titles[TILE_FIRE + TILE_EARTH] = 'Brimstone';
+titles[TILE_FIRE + TILE_WATER] = 'Alcohol';
+titles[TILE_EARTH + TILE_WATER] = 'Mud';
+
+titles[TILE_AIR + TILE_FIRE + TILE_EARTH] = 'Diamond';
+titles[TILE_AIR + TILE_FIRE + TILE_WATER] = 'Lightning';
+titles[TILE_AIR + TILE_EARTH + TILE_WATER] = 'Golem';
+titles[TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Oil';
+
+titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Life';
+
+titles[TILE_QUINTESSENCE] = 'Quintessence';
+
+titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER + TILE_QUINTESSENCE] = 'Harmony';
+
+
+function createTile(code){
+	var a = document.createElement('canvas');
+	a.width=80;
+	a.height=80;
+	var c=a.getContext('2d');
+	var imageData=c.createImageData(80,80);
+	for (var idx=6400; idx--; ){
+		var y = (idx / 80 | 0) - 39.5;
+		var x = idx % 80 - 39.5;
+
+		var value = Math.random() * 16 | 160; // 0xA0...0xAF integer
+		value -= (x*x*x)/1200;
+		value -= (y*y*y)/1200;
+
+		imageData.data[idx*4] = value;
+		imageData.data[idx*4+1] = value-=5;
+		imageData.data[idx*4+2] = value-=15;
+		imageData.data[idx*4+3] = 9000 - (x*x+y*y)*3;
+	}
+	c.putImageData(imageData, 0, 0);
+
+	c.globalCompositeOperation = 'source-atop';
+	for (var drawPosition = 6; --drawPosition;){ // Note the pre-increment. drawPosition is in range 5..1
+		c.save();
+
+		c.translate(
+			drawPosition & 4 && (5 - drawPosition) * 2 - 1,
+			drawPosition & 2 && (3 - drawPosition) * 2 - 1
+		);
+
+		c.globalAlpha = drawPosition ^ 1 ? 0.3 : .7;
+
+		c.font = '16px';
+		c.textAlign = 'center';
+		c.strokeStyle = c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
+		c.fillText([titles[code]], 40, 70);
+
+		// Draw icons
+		c.beginPath();
+		c.lineWidth = 2;
+		if (code == 1){ // Earth
+			c.moveTo(17, 31);
+			c.bezierCurveTo(
+				22, 24,
+				32, 24,
+				32, 31
+			);
+			c.bezierCurveTo(
+				33, 21,
+				47, 21,
+				49, 31
+			);
+			c.bezierCurveTo(
+				51, 28,
+				56, 24,
+				63, 31
+			);
+			c.moveTo(18, 39);
+			c.lineTo(62, 39);
+			c.moveTo(18, 48);
+			c.lineTo(62, 48);
+		}
+		if (code == 2){ // Water
+			c.moveTo(20, 45);
+			c.bezierCurveTo(
+				40, 60,
+				40, 30,
+				60, 45
+			);
+			c.moveTo(20, 35);
+			c.bezierCurveTo(
+				40, 50,
+				40, 20,
+				60, 35
+			);
+			c.moveTo(20, 25);
+			c.bezierCurveTo(
+				40, 40,
+				40, 10,
+				60, 25
+			);
+		}
+		if (code == 3) { // Mud
+			c.moveTo(26, 40);
+			c.bezierCurveTo(
+				11, 40,
+				16, 55,
+				46, 45
+			);
+			c.bezierCurveTo(
+				66, 45,
+				66, 40,
+				56, 40
+			);
+			c.moveTo(53, 35);
+			c.arc(49, 35, 4, 0, Math.PI * 2, false);
+			c.moveTo(40, 30);
+			c.arc(33, 30, 7, 0, Math.PI * 2, false)
+		}
+		if (code == 4) { // Air
+			c.moveTo(20, 35);
+			c.bezierCurveTo(
+				20, 32,
+				60, 38,
+				60, 35
+			);
+			c.moveTo(20, 27);
+			c.bezierCurveTo(
+				60, 27,
+				65, 17,
+				50, 17
+			);
+			c.moveTo(20, 43);
+			c.bezierCurveTo(
+				60, 43,
+				65, 53,
+				50, 53
+			);
+		}
+		if (code == 5){ // Sand
+			c.moveTo(20, 50);
+
+			c.bezierCurveTo(
+				35, 10,
+				35, 10,
+				50, 50
+			);
+
+			c.bezierCurveTo(
+				50, 50,
+				50, 55,
+				35, 55
+			);
+
+			c.moveTo(50, 35);
+			c.bezierCurveTo(
+				55, 25,
+				65, 50,
+				65, 50
+			);
+		}
+		if (code == 6){ // Rain
+			c.moveTo(32, 25);
+			c.bezierCurveTo(
+				20, 20,
+				15, 38,
+				20, 38
+			);
+			c.lineTo(60, 38);
+			c.bezierCurveTo(
+				65, 38,
+				63, 8,
+				45, 19
+			);
+			c.moveTo(48, 27);
+			c.bezierCurveTo(
+				48, 17,
+				32, 23,
+				32, 30
+			);
+			c.moveTo(32, 42);
+			c.lineTo(28, 51);
+
+			c.moveTo(42, 42);
+			c.lineTo(37, 53);
+
+			c.moveTo(52, 42);
+			c.lineTo(48, 51);
+
+		}
+		if (code == 7) { // Golem
+			c.moveTo(20, 55);
+			c.bezierCurveTo(
+				20, 35,
+				25, 40,
+				30, 35
+			);
+			c.bezierCurveTo(
+				38, 30,
+				25, 20,
+				40, 20
+			);
+
+			c.bezierCurveTo(
+				55, 20,
+				42, 30,
+				50, 35
+			);
+			c.bezierCurveTo(
+				55, 40,
+				60, 35,
+				60, 55
+			);
+
+			c.moveTo(31, 55);
+			c.bezierCurveTo(
+				31, 45,
+				28, 46,
+				27, 46
+			);
+
+			c.moveTo(49, 55);
+			c.bezierCurveTo(
+				49, 45,
+				52, 46,
+				53, 46
+			);
+		}
+		if (code == 8){ // Fire
+			c.moveTo(25, 40);
+			c.bezierCurveTo(
+				25, 60,
+				55, 60,
+				55, 40
+			);
+			c.bezierCurveTo(
+				55, 30,
+				40, 25,
+				40, 15
+			);
+			c.bezierCurveTo(
+				30, 25,
+				45, 40,
+				40, 40
+			);
+		}
+		if (code == 9){ // Sulfur/Brimstone
+			c.moveTo(33, 23);
+			c.lineTo(42, 27);
+			c.lineTo(45, 58);
+			c.lineTo(20, 43);
+			c.lineTo(30, 20);
+			c.lineTo(42, 14);
+			c.lineTo(55, 20);
+			c.lineTo(68, 47);
+			c.lineTo(50, 55);
+		}
+		if (code == 10){ // Alcohol
+			c.moveTo(32, 17);
+			c.bezierCurveTo(
+				38, 17,
+				37, 17,
+				37, 35
+			);
+			c.bezierCurveTo(
+				20, 47,
+				15, 52,
+				40, 52
+			);
+			c.bezierCurveTo(
+				65, 52,
+				60, 47,
+				43, 35
+			);
+			c.bezierCurveTo(
+				43, 17,
+				42, 17,
+				48, 17
+			)
+		}
+		if (code == 11){ // Oil. Barrel of oil, or lantern - pick yourself
+			c.moveTo(25, 18);
+			c.bezierCurveTo(
+				25, 10,
+				55, 10,
+				55, 18
+			);
+			c.bezierCurveTo(
+				55, 26,
+				25, 26,
+				25, 18
+			);
+			c.moveTo(55, 48);
+			c.bezierCurveTo(
+				55, 56,
+				25, 56,
+				25, 48
+			);
+			c.moveTo(27, 47);
+			c.lineTo(27, 24);
+			c.moveTo(53, 47);
+			c.lineTo(53, 24);
+
+			c.moveTo(40, 30);
+			c.bezierCurveTo(
+				30, 50,
+				50, 50,
+				40, 30
+			);
+		}
+		if (code == 12){ // Phlogiston
+			c.moveTo(37, 10);
+			c.bezierCurveTo(
+				47, 20,
+				17, 35,
+				37, 45
+			)
+			c.moveTo(43, 54);
+			c.bezierCurveTo(
+				33, 44,
+				63, 29,
+				43, 19
+			)
+		}
+		if (code == 13){ // Diamond
+			c.moveTo(48, 30);
+			c.lineTo(32, 30);
+			c.lineTo(20, 27);
+			c.lineTo(30, 17);
+			c.lineTo(50, 17);
+			c.lineTo(60, 27);
+			c.lineTo(40, 52);
+			c.lineTo(23, 32);
+		}
+		if (code == 14){ // Lightning
+			c.moveTo(35, 13);
+			c.lineTo(30, 33);
+			c.lineTo(40, 35);
+			c.lineTo(31, 51);
+			c.lineTo(55, 31);
+			c.lineTo(42, 28);
+			c.lineTo(50, 15);
+			c.lineTo(40, 14);
+		}
+		if (code == 15) { // Life
+			c.moveTo(43, 19);
+			c.bezierCurveTo(
+				48, 13,
+				55, 13,
+				60, 18
+			);
+			c.bezierCurveTo(
+				75, 33,
+				40, 53,
+				40, 53
+			);
+			c.bezierCurveTo(
+				40, 53,
+				5, 33,
+				20, 18
+			);
+			c.bezierCurveTo(
+				40, 8,
+				45, 31,
+				45, 35
+			);
+		}
+		if (code == 16) { // Quintessence
+			c.arc(40, 40, 23, 2.5, 6.9, false);
+		}
+
+		c.stroke();
+
+
+		// Draw elelment hints
+		if (code & 16){
+			c.beginPath();
+			c.arc(40, 40, 8, 0, Math.PI * 2, false);
+			if (drawPosition == 1 && code != 31){
+				c.fillStyle = '#FFF';
+			}
+			c.fill();
+		}
+
+		for (var bit = 4; bit--; ){
+			// Draw special Q tiles
+			c.beginPath();
+			if (code > 16 && code < 31){
+				if (bit & 1 ? code & TILE_AIR : code & TILE_WATER){
+					c.moveTo(40, 8);
+					c.bezierCurveTo(
+						48, 33,
+						32, 33,
+						40, 8
+					);
+				}
+				if (code & TILE_FIRE) {
+					c.moveTo(25, 25);
+					c.bezierCurveTo(
+						25, 40,
+						40, 30,
+						25, 25
+					);
+				}
+				if (code & TILE_EARTH){
+					c.moveTo(11, 31);
+					c.bezierCurveTo(
+						7, 27,
+						27, 7,
+						31, 11
+					);
+					c.lineTo(11, 31)
+				}
+			}
+			c.stroke();
+
+			if (code & (1<<bit)){
+				c.beginPath();
+				c.moveTo(0,0);
+				c.lineTo(0,35);
+				c.bezierCurveTo(10,35,-4,5,12,12);
+				c.bezierCurveTo(5,-4,35,10,35,0);
+				if (drawPosition == 1 && code != 31){
+					c.fillStyle = ['#0B0', '#00C', '#DD0', '#C00'][bit];
+				}
+				c.fill();
+			}
+			c.translate(40, 40);
+			c.rotate(Math.PI / 2);
+			c.translate(-40, -40);
+		}
+		c.restore();
+	}
+	return a;
+};
+
+var field = [];
+
+var tiles = [];
+for (var i=64; i--; ){
+	tiles[i] = createTile(i);
+}
+
+for (var i=64; i--; ){
+	field.push((Math.random() * 16 | 0) + 1);
+}
+
+c=a.getContext('2d');
+
+c.drawImage(createField(),0,0);
+
+for (var i=0; i<8; i++){
+	for (var j=0; j<8; j++){
+		c.drawImage(tiles[field[i*8 + j]], i * 90 + 7, j * 90 + 7);
+	}
+}
+
+</script>
+
