@@ -525,6 +525,10 @@ function animationFalling(descriptor){
 	}
 }
 
+function sweep(){
+	// TODO: Write me!
+}
+
 function gravity(){
 	var animationTransaction = [];
 	var offscreenStack = []; // Tiles that are falling offscreen
@@ -589,16 +593,29 @@ function draw(){
 	}
 }
 
-gravity();
-
-function _onAnimationFrame(){
-	if (blockingAnimations[0]){
-		draw();
+var needRecalcField = 1;
+var animationFrameRequested = 0;
+function invalidate(){
+	if (!animationFrameRequested){
+		requestAnimationFrame(onFrame);
+		animationFrameRequested = 1;
 	}
-	requestAnimationFrame(_onAnimationFrame);
 }
 
-_onAnimationFrame();
+function onFrame(){
+	animationFrameRequested = 0;
+	if (blockingAnimations[0]){
+		invalidate(); // Paint next frame until there are animations
+	} else if (needRecalcField){ // Recalc field only if there are no animations in progress
+		console.log('recalc');
+		while (needRecalcField = sweep() | gravity()); // Nothing. Loop infinitely until both these function return false
+		invalidate();
+	}
+	console.log('draw');
+	draw();
+}
+
+invalidate();
 
 
 </script>
