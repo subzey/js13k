@@ -1,0 +1,47 @@
+<body bgcolor=0>
+<script>
+function createField(){
+	var TILE_WIDTH = 80;
+	var CELL_PADDING = 2;
+	var CELL_BORDER = 1;
+	var CELL_MARGIN = 4;
+	var cell = CELL_PADDING + TILE_WIDTH + CELL_PADDING;
+	var cellInterval = CELL_BORDER + cell + CELL_BORDER + CELL_MARGIN;
+
+	var size = 8 * (CELL_BORDER + cell + CELL_BORDER) + (8+1) * CELL_MARGIN;
+
+	var a = document.createElement('canvas');
+	a.width=size;
+	a.height=size;
+	var c=a.getContext('2d');
+	var imageData=c.createImageData(size,size);
+	for (var idx=size * size; idx--; ){
+		var xPhase = idx % size % cellInterval - CELL_MARGIN;
+		var yPhase = (idx / size % cellInterval | 0) - CELL_MARGIN;
+		 // Board acts like background, it should be darker and more bluish
+		var value = Math.random() * 12 | 96; // 0x60...0x6B integer
+
+		if (xPhase >= 0 & yPhase >= 0){
+			value -= 20;
+			if (xPhase == 0 || yPhase == 0){
+				value -= 30;
+			}
+			if (xPhase == CELL_BORDER + cell || yPhase == CELL_BORDER + cell){
+				value += 30;
+			}
+		}
+
+		imageData.data[idx*4] = value;
+		imageData.data[idx*4+1] = value+=3;
+		imageData.data[idx*4+2] = value+=5;
+		imageData.data[idx*4+3] = 255;
+	}
+	c.putImageData(imageData, 0, 0);
+	return a;
+};
+
+
+// Demo
+document.body.appendChild(createField());
+
+</script>
