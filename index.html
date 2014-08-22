@@ -86,9 +86,9 @@ function createTile(code){
 		value -= (x*x*x)/1200;
 		value -= (y*y*y)/1200;
 
-		imageData.data[idx*4] = value;
-		imageData.data[idx*4+1] = value-=5;
-		imageData.data[idx*4+2] = value-=15;
+		imageData.data[idx*4] = value + (code == TILE_FIRE || code == TILE_AIR) * 20;
+		imageData.data[idx*4+1] = value - 5 + (code == TILE_EARTH || code == TILE_AIR) * 20;
+		imageData.data[idx*4+2] = value - 20 + (code == TILE_WATER) * 20;
 		imageData.data[idx*4+3] = 9000 - (x*x+y*y)*3;
 	}
 	c.putImageData(imageData, 0, 0);
