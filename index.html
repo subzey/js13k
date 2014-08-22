@@ -526,11 +526,12 @@ function animationFalling(descriptor){
 }
 
 function sweep(){
+	console.log('sweep');
 	// TODO: Write me!
 }
 
 function gravity(){
-	var animationTransaction = [];
+	console.log('gravity');
 	var offscreenStack = []; // Tiles that are falling offscreen
 	var now = +new Date();
 	for (var i = 64; i--;){ // Lower 7 rows
@@ -548,7 +549,7 @@ function gravity(){
 				var column = i % 8;
 				fallFrom = (offscreenStack[column] = ~-offscreenStack[column]) * 1.5 + Math.random()*.25; // Decide from what position it would fall
 			}
-			animationTransaction.push({
+			blockingAnimations.push({
 				'fn': animationFalling, // Type of animation
 				'affectedTiles': [i], // Tiles that are affected (always an array)
 				'timestamp': now, // Start of the animation
@@ -556,29 +557,20 @@ function gravity(){
 			});
 		}
 	}
-	if (animationTransaction[0]){ // There's something to animate
-		blockingAnimations.push(animationTransaction);
-		return 1; // Return code - field is changed
-	}
 }
 
 function draw(){
+	console.log('draw');
 	a.width=724;
 	// Get tiles that are blocked by animations
 	var blockedTiles = [];
-	for (var i=blockingAnimations.length; i--; ){
-		var animationTransaction = blockingAnimations[i];
-		for (var j=animationTransaction.length; j--; ){
-			var animation = animationTransaction[j];
-			if (animation.fn(animation)){
-				// Animation returned true. We don't need to draw affeted tiles
-				blockedTiles = blockedTiles.concat(animation.affectedTiles || []);
-			} else {
-				// Animation is ended or expired
-				animationTransaction.splice(j, 1);
-			}
-		}
-		if (!animationTransaction[0]){
+	for (var i=blockingAnimations.length; i--; ){ // All the blocking animations happens in the same time
+		var animation = blockingAnimations[i];
+		if (animation.fn(animation)){
+			// Animation returned true. We don't need to draw affeted tiles
+			blockedTiles = blockedTiles.concat(animation.affectedTiles || []);
+		} else {
+			// Animation is ended or expired
 			blockingAnimations.splice(i, 1);
 		}
 	}
@@ -593,8 +585,9 @@ function draw(){
 	}
 }
 
-var needRecalcField = 1;
+var recalcState = [1];
 var animationFrameRequested = 0;
+
 function invalidate(){
 	if (!animationFrameRequested){
 		requestAnimationFrame(onFrame);
@@ -606,12 +599,22 @@ function onFrame(){
 	animationFrameRequested = 0;
 	if (blockingAnimations[0]){
 		invalidate(); // Paint next frame until there are animations
-	} else if (needRecalcField){ // Recalc field only if there are no animations in progress
-		console.log('recalc');
-		while (needRecalcField = sweep() | gravity()); // Nothing. Loop infinitely until both these function return false
-		invalidate();
+	} else if (recalcState){
+		do {
+			if (recalcState.length & 1){
+				gravity();
+			} else {
+				sweep();
+			}
+			recalcState.unshift(blockingAnimations.length);
+			if (recalcState[0] + recalcState[1] == 0){ // == 0 is critical. NaN is an expected value
+				recalcState = 0; // something falsy
+				// Do not invalidate, we're in idle state until played do something
+			} else {
+				invalidate();
+			}
+		} while (recalcState && !recalcState[0])
 	}
-	console.log('draw');
 	draw();
 }
 
