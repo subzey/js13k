@@ -504,10 +504,11 @@ a.style.background = 'url(' + a.toDataURL() + ')'; // We don't need to repaint t
 
 
 function getNewTileIndex(){
-	return (Math.random() * 16 | 0) + 1;
+	return [1,2,4,8][Math.random() * 4 | 0];
 }
 
 var blockingAnimations = [];
+var nonblockingAnimations = [];
 
 var field = [];
 
@@ -546,7 +547,8 @@ a.onmousemove = function(e){
 		var dy = hoveredCoords[1] - dragStartCoords[1];
 		if (dx*dx + dy*dy > 5000){ // Threshold
 			var direction = +(dx/dy * dx/dy < 1); // 0 if x, 1 if y
-			var newTileCoord = dragStartCoords[2+direction] + (hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1);
+			var sign = hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1
+			var newTileCoord = dragStartCoords[2+direction] + sign;
 			var failed = 0;
 			if (newTileCoord & 8){ // == 0 or == 8
 				failed = 1;
@@ -558,7 +560,13 @@ a.onmousemove = function(e){
 			console.log('Drag from', dragStartCoords[4], 'to', idx, 'failed: ', !!failed);
 
 			if (failed){
-				;
+				nonblockingAnimations.push({
+					'fn': animationMergeFailed,
+					'affectedTiles': [dragStartCoords[4]],
+					'timestamp': +new Date,
+					'direction': direction,
+					'sign': sign
+				});
 			} else {
 				blockingAnimations = [{
 					'fn': animationMerge, // Type of animation
@@ -657,6 +665,20 @@ function animationMerge(descriptor){
 	}
 }
 
+function animationMergeFailed(descriptor){
+	console.log('animationMergeFailed', descriptor.direction, descriptor.sign)
+	var animationStage = (new Date - descriptor.timestamp) / 1000;
+
+	if (animationStage < 1){
+		var shift = Math.cos(animationStage * 15) * .18 * (1-animationStage);
+		var x = descriptor.affectedTiles[0] % 8 + shift * descriptor.sign * (1 - descriptor.direction);
+		var y = (descriptor.affectedTiles[0] / 8 | 0) + shift * descriptor.sign * descriptor.direction;
+		var tilesArray = descriptor.affectedTiles[0] == hoveredCoords[4] ? hoveredTiles : tiles;
+		c.drawImage(tilesArray[field[descriptor.affectedTiles[0]]], x * 90 + 7, y * 90 + 7);
+		return 1;
+	}
+}
+
 function sweep(){
 	console.log('sweep');
 	// TODO: Write me!
@@ -704,6 +726,21 @@ function draw(){
 		} else {
 			// Animation is ended or expired
 			blockingAnimations.splice(i, 1);
+		}
+	}
+
+	for (var i=nonblockingAnimations.length; i--; ){
+		var animation = nonblockingAnimations[i];
+		var tilesBlocked = 0;
+		for (var j=animation.affectedTiles.length; j--; ){
+			if (~blockedTiles.indexOf(animation.affectedTiles[j])){
+				tilesBlocked = 1;
+			}
+		}
+		if (!tilesBlocked && animation.fn(animation)){
+			blockedTiles = blockedTiles.concat(animation.affectedTiles || []);
+		} else {
+			nonblockingAnimations.splice(i, 1);
 		}
 	}
 
@@ -764,6 +801,9 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 		}
 	}
 	draw();
+	if (nonblockingAnimations[0]){
+		invalidate();
+	}
 }
 
 invalidate();
