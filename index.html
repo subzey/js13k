@@ -1,46 +1,6 @@
 <body bgcolor=0><canvas id="a" width=724 height=724></canvas>
 <script>
-// Draw bg
-var c=a.getContext('2d');
-
-var TILE_WIDTH = 80;
-var CELL_PADDING = 2;
-var CELL_BORDER = 1;
-var CELL_MARGIN = 4;
-var cell = CELL_PADDING + TILE_WIDTH + CELL_PADDING;
-var cellInterval = CELL_BORDER + cell + CELL_BORDER + CELL_MARGIN;
-
-var size = 8 * (CELL_BORDER + cell + CELL_BORDER) + (8+1) * CELL_MARGIN;
-
-var imageData=c.createImageData(size,size);
-for (var idx=size * size; idx--; ){
-	var xPhase = idx % size % cellInterval - CELL_MARGIN;
-	var yPhase = (idx / size % cellInterval | 0) - CELL_MARGIN;
-	 // Board acts like background, it should be darker and more bluish
-	var value = Math.random() * 12 | 96; // 0x60...0x6B integer
-
-	if (xPhase >= 0 & yPhase >= 0){
-		value -= 20;
-		if (xPhase == 0 || yPhase == 0){
-			value -= 30;
-		}
-		if (xPhase == CELL_BORDER + cell || yPhase == CELL_BORDER + cell){
-			value += 30;
-		}
-	}
-
-	imageData.data[idx*4] = value;
-	imageData.data[idx*4+1] = value+=3;
-	imageData.data[idx*4+2] = value+=5;
-	imageData.data[idx*4+3] = 255;
-}
-c.putImageData(imageData, 0, 0);
-
-a.style.background = 'url(' + a.toDataURL() + ')'; // We don't need to repaint this
-
 // Tiles
-
-
 var titles = ['Void'];
 
 var TILE_EARTH = parseInt('00001', 2);
@@ -73,11 +33,13 @@ titles[TILE_QUINTESSENCE] = 'Quintessence';
 titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER + TILE_QUINTESSENCE] = 'Harmony';
 
 
-function createTile(code){
-	var a = document.createElement('canvas');
+var tiles = []; // Tile images
+
+var c=a.getContext('2d');
+
+for (var code=64; code--; ){
 	a.width=80;
 	a.height=80;
-	var c=a.getContext('2d');
 	var imageData=c.createImageData(80,80);
 	for (var idx=6400; idx--; ){
 		var y = (idx / 80 | 0) - 39.5;
@@ -486,8 +448,48 @@ function createTile(code){
 		}
 		c.restore();
 	}
-	return a;
-};
+	tiles[code] = new Image();
+	tiles[code].src = a.toDataURL();
+}
+
+// Draw bg
+a.width=724;
+a.height=724;
+var TILE_WIDTH = 80;
+var CELL_PADDING = 2;
+var CELL_BORDER = 1;
+var CELL_MARGIN = 4;
+var cell = CELL_PADDING + TILE_WIDTH + CELL_PADDING;
+var cellInterval = CELL_BORDER + cell + CELL_BORDER + CELL_MARGIN;
+
+var size = 8 * (CELL_BORDER + cell + CELL_BORDER) + (8+1) * CELL_MARGIN;
+
+var imageData=c.createImageData(size,size);
+for (var idx=size * size; idx--; ){
+	var xPhase = idx % size % cellInterval - CELL_MARGIN;
+	var yPhase = (idx / size % cellInterval | 0) - CELL_MARGIN;
+	 // Board acts like background, it should be darker and more bluish
+	var value = Math.random() * 12 | 96; // 0x60...0x6B integer
+
+	if (xPhase >= 0 & yPhase >= 0){
+		value -= 20;
+		if (xPhase == 0 || yPhase == 0){
+			value -= 30;
+		}
+		if (xPhase == CELL_BORDER + cell || yPhase == CELL_BORDER + cell){
+			value += 30;
+		}
+	}
+
+	imageData.data[idx*4] = value;
+	imageData.data[idx*4+1] = value+=3;
+	imageData.data[idx*4+2] = value+=5;
+	imageData.data[idx*4+3] = 255;
+}
+c.putImageData(imageData, 0, 0);
+
+a.style.background = 'url(' + a.toDataURL() + ')'; // We don't need to repaint this
+
 
 function getNewTileIndex(){
 	return (Math.random() * 16 | 0) + 1;
@@ -496,11 +498,6 @@ function getNewTileIndex(){
 var blockingAnimations = [];
 
 var field = [];
-
-var tiles = [];
-for (var i=64; i--; ){
-	tiles[i] = createTile(i);
-}
 
 for (var i=64; i--; ){
 	// field.push(getNewTileIndex());
@@ -609,20 +606,18 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 	if (blockingAnimations[0]){
 		invalidate(); // Paint next frame until there are animations
 	} else if (recalcState){
-//		do {
-			if (recalcState.length & 1){
-				gravity();
-			} else {
-				sweep();
-			}
-			recalcState.unshift(blockingAnimations.length);
-			if (recalcState[0] + recalcState[1] == 0){ // == 0 is critical. NaN is an expected value
-				recalcState = 0; // something falsy
-				// Do not invalidate, we're in idle state until player do something
-			} else {
-				invalidate();
-			}
-//		} while (recalcState && !recalcState[0])
+		if (recalcState.length & 1){
+			gravity();
+		} else {
+			sweep();
+		}
+		recalcState.unshift(blockingAnimations.length);
+		if (recalcState[0] + recalcState[1] == 0){ // == 0 is critical. NaN is an expected value
+			recalcState = 0; // something falsy
+			// Do not invalidate, we're in idle state until player do something
+		} else {
+			invalidate();
+		}
 	}
 	draw();
 }
