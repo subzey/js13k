@@ -512,7 +512,7 @@ var blockingAnimations = [];
 var field = [];
 
 for (var i=64; i--; ){
-	// field.push(getNewTileIndex());
+	field.push(getNewTileIndex());
 }
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
@@ -544,14 +544,14 @@ a.onmousemove = function(e){
 	if (dragStartCoords && !blockingAnimations[0]){
 		var dx = hoveredCoords[0] - dragStartCoords[0];
 		var dy = hoveredCoords[1] - dragStartCoords[1];
-		if (dx*dx + dy*dy > 7000){ // Threshold
+		if (dx*dx + dy*dy > 5000){ // Threshold
 			var direction = +(dx/dy * dx/dy < 1); // 0 if x, 1 if y
 			var newTileCoord = dragStartCoords[2+direction] + (hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1);
 			var failed = 0;
 			if (newTileCoord & 8){ // == 0 or == 8
 				failed = 1;
 			}
-			var idx = (direction ? dragStartCoords[3] : newTileCoord) * 8 + (direction ? newTileCoord : dragStartCoords[2]);
+			var idx = (direction ? newTileCoord : dragStartCoords[3]) * 8 + (direction ? dragStartCoords[2] : newTileCoord);
 			if (field[idx] & field[dragStartCoords[4]]){
 				failed = 1;
 			}
@@ -559,19 +559,24 @@ a.onmousemove = function(e){
 			if (failed){
 				;
 			} else {
+				blockingAnimations = [{
+					'fn': animationMerge, // Type of animation
+					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
+					'timestamp': +new Date, // Start of the animation
+					'tiles': [field[idx], field[dragStartCoords[4]]]
+				}];
+
 				// Changing field!
 				field[idx] = field[idx] | field[dragStartCoords[4]];
 				field[dragStartCoords[4]] = 0;
 				//
+				recalcState = recalcState || [];
 
-				blockingAnimations = [{
-					'fn': animationMerge, // Type of animation
-					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
-					'timestamp': now // Start of the animation
-				}];
+
 			}
+			invalidate();
+			dragStartCoords = 0;
 		}
-		dragStartCoords = 0;
 	}
 }
 a.onmouseout = function(e){ // e argument is unused
@@ -606,18 +611,19 @@ function animationFalling(descriptor){
 }
 
 function animationMerge(descriptor){
-	var animationStage = new Date - descriptor.timestamp;
-	if (animationStage > 500){
+	var animationStage = 1 - (new Date - descriptor.timestamp) / 300;
+	console.log('AnimStage', animationStage);
+	if (animationStage > 0){
+		var dstX = descriptor.affectedTiles[0] % 8;
+		var dstY = descriptor.affectedTiles[0] / 8 | 0;
+		var dX = (descriptor.affectedTiles[1] % 8) - dstX;
+		var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
+
+		c.drawImage(hoveredTiles[descriptor.tiles[0]], dstX * 90 + 7, dstY * 90 + 7);
+
+		c.drawImage(hoveredTiles[descriptor.tiles[1]], (dstX + dX * animationStage) * 90 + 7, (dstY + dY * animationStage) * 90 + 7);
 		return 1;
 	}
-	var dstX = descriptor.affectedTiles[0] % 8;
-	var dstY = descriptor.affectedTiles[0] / 8 | 0;
-	var dX = (descriptor.affectedTiles[1] % 8) - dstX;
-	var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
-
-	c.drawImage(hoveredTiles[field[descriptor.affectedTiles[0]]], dstX, dstY);
-
-	c.drawImage(hoveredTiles[field[descriptor.affectedTiles[1]]], dstX + dX * animationStage / 500, dstY + dY * animationStage / 500);
 }
 
 function sweep(){
@@ -634,7 +640,7 @@ function gravity(){
 			for (var j=i; j>=0; j-=8){
 				if (field[j]){ // Tile found on board
 					field[i] = field[j]; // Move tile
-					field[j] = field[0];
+					field[j] = 0;
 					var fallFrom = j / 8 | 0;
 					break;
 				}
@@ -682,7 +688,7 @@ function draw(){
 	}
 }
 
-var recalcState = [1];
+var recalcState = [];
 var animationFrameRequested = 0;
 
 function invalidate(){
