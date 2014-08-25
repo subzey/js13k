@@ -536,9 +536,43 @@ function getTileByCoord(coord){
 
 // UI
 a.onmousemove = function(e){
-	hoveredCoords = extractCoords(e);
-	console.log(hoveredCoords);
-	invalidate();
+	var coords = extractCoords(e);
+	// Request repaint only if hovered tile changed
+	// Keep in mind, coords[4] may be `undefined`!
+	hoveredCoords[4] == coords[4] || invalidate();
+	hoveredCoords = coords;
+	if (dragStartCoords && !blockingAnimations[0]){
+		var dx = hoveredCoords[0] - dragStartCoords[0];
+		var dy = hoveredCoords[1] - dragStartCoords[1];
+		if (dx*dx + dy*dy > 7000){ // Threshold
+			var direction = +(dx/dy * dx/dy < 1); // 0 if x, 1 if y
+			var newTileCoord = dragStartCoords[2+direction] + (hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1);
+			var failed = 0;
+			if (newTileCoord & 8){ // == 0 or == 8
+				failed = 1;
+			}
+			var idx = (direction ? dragStartCoords[3] : newTileCoord) * 8 + (direction ? newTileCoord : dragStartCoords[2]);
+			if (field[idx] & field[dragStartCoords[4]]){
+				failed = 1;
+			}
+			console.log('Drag from', dragStartCoords[4], 'to', idx, 'failed: ', !!failed);
+			if (failed){
+				;
+			} else {
+				// Changing field!
+				field[idx] = field[idx] | field[dragStartCoords[4]];
+				field[dragStartCoords[4]] = 0;
+				//
+
+				blockingAnimations = [{
+					'fn': animationMerge, // Type of animation
+					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
+					'timestamp': now // Start of the animation
+				}];
+			}
+		}
+		dragStartCoords = 0;
+	}
 }
 a.onmouseout = function(e){ // e argument is unused
 	hoveredCoords = 0;
@@ -546,8 +580,11 @@ a.onmouseout = function(e){ // e argument is unused
 }
 a.onmousedown = function(e){
 	e.preventDefault();
-	dragStartCoords = extractCoords(e);
-	invalidate();
+	if (!blockingAnimations[0]){
+		var coords = extractCoords(e);
+		dragStartCoords[4] == coords[4] || invalidate();
+		dragStartCoords = coords;
+	}
 }
 a.onmouseup = function(e){  // e argument is unused
 	dragStartCoords = 0;
@@ -566,6 +603,21 @@ function animationFalling(descriptor){
 		c.drawImage(tiles[field[descriptor.affectedTiles]], x * 90 + 7, y * 90 + 7);
 		return 1;
 	}
+}
+
+function animationMerge(descriptor){
+	var animationStage = new Date - descriptor.timestamp;
+	if (animationStage > 500){
+		return 1;
+	}
+	var dstX = descriptor.affectedTiles[0] % 8;
+	var dstY = descriptor.affectedTiles[0] / 8 | 0;
+	var dX = (descriptor.affectedTiles[1] % 8) - dstX;
+	var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
+
+	c.drawImage(hoveredTiles[field[descriptor.affectedTiles[0]]], dstX, dstY);
+
+	c.drawImage(hoveredTiles[field[descriptor.affectedTiles[1]]], dstX + dX * animationStage / 500, dstY + dY * animationStage / 500);
 }
 
 function sweep(){
