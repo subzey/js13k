@@ -556,6 +556,7 @@ a.onmousemove = function(e){
 				failed = 1;
 			}
 			console.log('Drag from', dragStartCoords[4], 'to', idx, 'failed: ', !!failed);
+
 			if (failed){
 				;
 			} else {
@@ -611,17 +612,47 @@ function animationFalling(descriptor){
 }
 
 function animationMerge(descriptor){
-	var animationStage = 1 - (new Date - descriptor.timestamp) / 300;
-	console.log('AnimStage', animationStage);
-	if (animationStage > 0){
-		var dstX = descriptor.affectedTiles[0] % 8;
-		var dstY = descriptor.affectedTiles[0] / 8 | 0;
-		var dX = (descriptor.affectedTiles[1] % 8) - dstX;
-		var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
+	var animationStage = (new Date - descriptor.timestamp) / 300;
+	if (animationStage < 2){
+		var dstX = (descriptor.affectedTiles[0] % 8);
+		var dstY = (descriptor.affectedTiles[0] / 8 | 0);
 
-		c.drawImage(hoveredTiles[descriptor.tiles[0]], dstX * 90 + 7, dstY * 90 + 7);
+		c.save();
+		c.fillStyle = '#FFF';
+		if (animationStage < 1){
+			var animationDistance = Math.cos(animationStage * Math.PI / 2)
+			var dX = (descriptor.affectedTiles[1] % 8) - dstX;
+			var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
+			var srcX = dstX + dX * animationDistance;
+			var srcY = dstY + dY * animationDistance;
 
-		c.drawImage(hoveredTiles[descriptor.tiles[1]], (dstX + dX * animationStage) * 90 + 7, (dstY + dY * animationStage) * 90 + 7);
+			c.drawImage(hoveredTiles[descriptor.tiles[0]], dstX * 90 + 7, dstY * 90 + 7);
+			c.drawImage(hoveredTiles[descriptor.tiles[1]], srcX * 90 + 7, srcY * 90 + 7);
+
+
+			var leftX = Math.max(dstX, srcX) * 90 + 7;
+			var topY = Math.max(dstY, srcY) * 90 + 7;
+			var rightX = Math.min(dstX, srcX) * 90 + 7 + 80;
+			var bottomY = Math.min(dstY, srcY) * 90 + 7 + 80;
+
+			console.log(leftX, rightX, topY, bottomY);
+
+			if (rightX > leftX && bottomY > topY){
+				c.globalCompositeOperation = 'source-atop';
+				c.fillRect(
+					leftX,
+					topY,
+					rightX - leftX,
+					bottomY - topY
+				)
+			}
+		} else {
+			c.drawImage(hoveredTiles[field[descriptor.affectedTiles[0]]], dstX * 90 + 7, dstY * 90 + 7);
+			c.globalCompositeOperation = 'source-atop';
+			c.globalAlpha = 2 - animationStage;
+			c.fillRect(dstX * 90 + 7, dstY * 90 + 7, 80, 80);
+		}
+		c.restore();
 		return 1;
 	}
 }
@@ -678,7 +709,7 @@ function draw(){
 
 	// Draw not blocked tiles
 	for (var i=64; i--; ){
-		if (!~blockedTiles.indexOf(i)){
+		if (!~blockedTiles.indexOf(i) && field[i]){
 			var x = i % 8;
 			var y = i / 8 | 0;
 			// Highlight current cell only if no animations
