@@ -503,6 +503,46 @@ for (var i=64; i--; ){
 	// field.push(getNewTileIndex());
 }
 
+var hoveredCoords = 0;
+var dragStartCoords = 0;
+
+function extractCoords(e){
+	var a = [
+		(1/e.offsetX) ? e.offsetX : e.layerX, // [0] - Relative X
+		(1/e.offsetX) ? e.offsetY : e.layerY  // [1] - Relative Y
+	];
+	a = a.concat(a.map(getTileByCoord)); // [2], [3] - tile X/Y
+	a[4] = a[3]*8 + a[2];
+	return a;
+}
+
+function getTileByCoord(coord){
+	coord = (coord - 2) / 90 | 0;
+	if (coord & 8) return; // if (coord == -1 || coord == 8) return undefined (-> NaN)
+	return coord;
+}
+
+// UI
+a.onmousemove = function(e){
+	hoveredCoords = extractCoords(e);
+	console.log(hoveredCoords);
+	invalidate();
+}
+a.onmouseout = function(e){
+	hoveredCoords = 0; // Something falsy, but not null/undefined
+	invalidate();
+}
+a.onmousedown = function(e){
+	dragStartCoords = [e.clientX, e.clientY];
+	invalidate();
+	e.preventDefult();
+}
+a.onmouseup = function(e){
+	dragStartCoords = 0;
+}
+
+
+
 function animationFalling(descriptor){
 	var x = descriptor.affectedTiles % 8; // Affected tiles array contains only one value, it is safe do do this trick
 	var yStart = descriptor.fallFrom;
