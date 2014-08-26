@@ -679,9 +679,61 @@ function animationMergeFailed(descriptor){
 	}
 }
 
+function animationDisappear(descriptor){
+	; // TODO: Write me!
+}
+
 function sweep(){
 	console.log('sweep');
-	// TODO: Write me!
+	var triples = [];
+	// Pass 1: Find triples
+	for (var i=8-2; i--; ){
+		for (var j=8; j--; ){
+			var idx = j * 8 + i;
+			if (field[idx] && field[idx] == field[idx+1] && field[idx] == field[idx+2]){
+				triples.push([idx, idx+1, idx+2])
+			}
+			var idx = i * 8 + j;
+			if (field[idx] && field[idx] == field[idx+8] && field[idx] == field[idx+16]){
+				triples.push([idx, idx+8, idx+16])
+			}
+		}
+	}
+	// Pass 2: Glue triples
+	l:for (var i=triples.length; i--; ){
+		for (var j=i; j--; ){
+			for (var k=0; k < triples[i].length; k++){ // This loop is not reversed, as triples[i].length may change
+				if (~triples[j].indexOf(triples[i][k])){
+					triples[j] = triples[j].concat(triples[i]); // merge intersecting triples
+					continue l; // there's no need to clean array
+				}
+			}
+		}
+		// Pass 3: Unique
+		var triple = triples[i].sort(); // .sort() is to be predictable
+
+		blockingAnimations.push({
+			'fn': animationDisappear,
+			'affectedTiles': triple,
+			/**
+				You may ask, why do we set `triple` as affectedTiles, if it is not filtered yet?
+				That's simple: it is assigned by reference. And by the time animation run,
+				filtering will be done.
+			*/
+			'timestamp': +new Date,
+			'tile': field[triple[0]]
+		}); // TODO: Quintessence
+
+		for (var j=triple.length; j--; ){
+			if (field[triple[j]]){
+				// Change field
+				field[triple[j]] = 0;
+			} else {
+				triple.splice(j, 1);
+			}
+		}
+	}
+	console.log(blockingAnimations.slice());
 }
 
 function gravity(){
