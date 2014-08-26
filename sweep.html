@@ -1,0 +1,85 @@
+<script>
+var field = [
+	1,	1,	1,	1,	1,	0,	0,	0,
+	0,	0,	1,	0,	0,	0,	0,	0,
+	0,	0,	1,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,
+	2,	2,	2,	2,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0
+];
+</script>
+<script>
+function sweep(){
+	var triples = [];
+	// Pass 1: Find triples
+	for (var i=8-2; i--; ){
+		for (var j=8; j--; ){
+			var idx = j * 8 + i;
+			if (field[idx] && field[idx] == field[idx+1] && field[idx] == field[idx+2]){
+				triples.push([idx, idx+1, idx+2])
+			}
+			var idx = i * 8 + j;
+			if (field[idx] && field[idx] == field[idx+8] && field[idx] == field[idx+16]){
+				triples.push([idx, idx+8, idx+16])
+			}
+		}
+	}
+	// Pass 2: Glue triples
+	for (var i=triples.length; i--; ){
+		for (var j=i; j--; ){
+			for (var k=0; k < triples[i].length; k++){ // This loop is not reversed, as triples[i].length may change
+				if (~triples[j].indexOf(triples[i][k])){
+					triples[j] = triples[j].concat(triples[i]);
+					triples[i] = 0;
+				}
+			}
+		}
+		if (!triples[i]){
+			triples.splice(i, 1);
+		} else {
+			// Pass 3: Unique
+			var triple = triples[i];
+			var dict = {};
+			for (var j=triple.length; j--; ){
+				if (dict[triple[j]]){
+					triple.splice(j, 1);
+				}
+				dict[triple[j]] = 1;
+			}
+		}
+	}
+	return triples;
+}
+function getMainTile(triple){
+	var maxScore = 0;
+	for (var i=triple.length; i--; ){
+		var idx = triple[i];
+		var score = 0;
+		if (idx % 8 > 0 && ~triple.indexOf(idx - 1)) score++;
+		if (idx % 8 < 7 && ~triple.indexOf(idx + 1)) score++;
+		if (~triple.indexOf(idx - 8)) score++;
+		if (~triple.indexOf(idx + 8)) score++;
+		if (score > maxScore){
+			var out = [];
+			maxScore = score;
+		}
+		if (score == maxScore){ // Not else if!
+			out.push(idx);
+		}
+	}
+	if (out.length > 2){
+		var subQuery = getMainTile(out);
+		if (subQuery != null){
+			out = [subQuery];
+		}
+	}
+	return out[0];
+}
+
+var triples = sweep();
+console.log(triples, triples.map(getMainTile));
+
+sweep();
+</script>
