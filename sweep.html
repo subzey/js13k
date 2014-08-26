@@ -1,14 +1,18 @@
+<body>
 <script>
 var field = [
 	1,	1,	1,	1,	1,	0,	0,	0,
-	0,	0,	1,	0,	0,	0,	0,	0,
-	0,	0,	1,	0,	0,	0,	0,	0,
-	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	3,	1,	4,	4,	4,	0,	0,
+	0,	0,	1,	0,	4,	0,	0,	0,
+	0,	2,	0,	0,	0,	0,	0,	0,
 	2,	2,	2,	2,	0,	0,	0,	0,
-	0,	0,	0,	0,	0,	0,	0,	0,
-	0,	0,	0,	0,	0,	0,	0,	0,
-	0,	0,	0,	0,	0,	0,	0,	0
+	0,	0,	7,	0,	0,	0,	4,	4,
+	4,	4,	7,	0,	0,	0,	0,	0,
+	7,	7,	7,	0,	0,	0,	0,	0
 ];
+for (var i=64; i--; ){
+	field[i] = (Math.random() * 4 | 0) + 1;
+}
 </script>
 <script>
 function sweep(){
@@ -40,7 +44,7 @@ function sweep(){
 			triples.splice(i, 1);
 		} else {
 			// Pass 3: Unique
-			var triple = triples[i];
+			var triple = triples[i].sort(); // .sort() is to be predictable
 			var dict = {};
 			for (var j=triple.length; j--; ){
 				if (dict[triple[j]]){
@@ -78,8 +82,32 @@ function getMainTile(triple){
 	return out[0];
 }
 
+</script>
+<script>
+var t = document.createElement('table');
+t.border = 1;
+document.body.appendChild(t);
+var tableCells = [];
+for (var i=0; i<64; i++){
+	if (i % 8 == 0){
+		var tr = document.createElement('tr');
+		t.appendChild(tr);
+	}
+	var td = document.createElement('td');
+	td.width= 30;
+	td.height= 30;
+	td.innerHTML = field[i] || '';
+	tr.appendChild(td);
+	tableCells[i] = td;
+}
 var triples = sweep();
-console.log(triples, triples.map(getMainTile));
+for (var i=triples.length; i--; ){
+	for (var j=triples[i].length; j--; ){
+		tableCells[triples[i][j]].style.background = ['#F88', '#8F8', '#88F', '#8FF', '#F8F', '#FF8'][i];
+	}
+}
 
-sweep();
+triples.map(getMainTile).forEach(function(mainTile){
+	tableCells[mainTile].innerHTML = '(' + field[mainTile] + ')';
+});
 </script>
