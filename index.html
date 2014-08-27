@@ -680,7 +680,18 @@ function animationMergeFailed(descriptor){
 }
 
 function animationDisappear(descriptor){
-	; // TODO: Write me!
+	var alpha = 1 - (new Date - descriptor.timestamp) / 500;
+	if (alpha > 0){
+		c.save();
+		c.globalAlpha = alpha;
+		for (var i=descriptor.affectedTiles.length; i--; ){
+			var x = descriptor.affectedTiles[i] % 8;
+			var y = descriptor.affectedTiles[i] / 8 | 0;
+			c.drawImage(hoveredTiles[descriptor.tile], x * 90 + 7, y * 90 + 7);
+		}
+		c.restore();
+		return 1;
+	}
 }
 
 function sweep(){
