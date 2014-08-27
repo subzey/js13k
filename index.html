@@ -507,13 +507,21 @@ function getNewTileIndex(){
 	return [1,2,4,8][Math.random() * 4 | 0];
 }
 
-var blockingAnimations = [];
+var blockingAnimations = [0]; // Anything, just to ensure field filling loop works for the first time
 var nonblockingAnimations = [];
 
 var field = [];
-
-for (var i=64; i--; ){
-	field.push(getNewTileIndex());
+// Fill field ensuring there's no triples
+for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
+	for (var i=64; i--; ){
+		// Push random tiles
+		field.push(getNewTileIndex());
+	}
+	// Cleanup all animations
+	blockingAnimations = [];
+	// Fast forward sweep/gravity
+	sweep();
+	gravity();
 }
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
