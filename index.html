@@ -543,6 +543,8 @@ function getTileByCoord(coord){
 	return coord;
 }
 
+var lastMergedTileIndex = -1;
+
 // UI
 a.onmousemove = function(e){
 	var coords = extractCoords(e);
@@ -576,6 +578,7 @@ a.onmousemove = function(e){
 					'sign': sign
 				});
 			} else {
+				lastMergedTileIndex = field[dragStartCoords[4];
 				blockingAnimations = [{
 					'fn': animationMerge, // Type of animation
 					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
@@ -731,17 +734,11 @@ function sweep(){
 		// Pass 3: Unique
 		var triple = triples[i].sort(); // .sort() is to be predictable
 
-		blockingAnimations.push({
+		var animation = {
 			'fn': animationDisappear,
-			'affectedTiles': triple,
-			/**
-				You may ask, why do we set `triple` as affectedTiles, if it is not filtered yet?
-				That's simple: it is assigned by reference. And by the time animation run,
-				filtering will be done.
-			*/
 			'timestamp': +new Date,
 			'tile': field[triple[0]]
-		}); // TODO: Quintessence
+		}
 
 		for (var j=triple.length; j--; ){
 			if (field[triple[j]]){
@@ -751,8 +748,55 @@ function sweep(){
 				triple.splice(j, 1);
 			}
 		}
+		animation.affectedTiles = triple;
+		if (triple.length > 4){
+			animation.q = getMainTile(triple, lastMergedTileIndex);
+			field[animation.q] = 16; // Quintessence
+		}
+		blockingAnimations.push(animation);
+
 	}
-	console.log(blockingAnimations.slice());
+	lastMergedTileIndex = -1;
+}
+
+// Get "main" tile from adjacent ones
+function getMainTile(triple, hint){
+	// If we have pre-set preferrable index, and it is in triple, just return it
+	if (hint > 0 && ~triple.indexOf(hint)){
+		return hint;
+	}
+	var maxScore = 0;
+	for (var i=triple.length; i--; ){
+		// Determine tiles with max neighbours
+		var idx = triple[i];
+		var score = 0;
+		if (idx % 8 > 0 && ~triple.indexOf(idx - 1)) score++;
+		if (idx % 8 < 7 && ~triple.indexOf(idx + 1)) score++;
+		if (~triple.indexOf(idx - 8)) score++;
+		if (~triple.indexOf(idx + 8)) score++;
+		if (score > maxScore){
+			var out = [];
+			maxScore = score;
+		}
+		if (score == maxScore){ // Not else if!
+			out.push(idx);
+		}
+	}
+	if (out.length > 2){
+		/**
+		If out.length is 1, that's great, we have only one candidate tile.
+
+		If out.length is 2, that's not so good, we have 2 tiles with equal weights.
+		We should return one, so let it be the 0'th.
+
+		If there's more tiles, repeat algo recursively
+		*/
+		var subQuery = getMainTile(out);
+		if (1 / subQuery){ // subQuery is finite, i.e., not undefined
+			out = [subQuery];
+		}
+	}
+	return out[0];
 }
 
 function gravity(){
