@@ -717,10 +717,30 @@ function animationDisappear(descriptor){
 }
 
 function animationExplosion(descriptor){
-	if (new Date - descriptor.timestamp > 3000){
-		return;
-	};
-	return;
+	var animationStage = (new Date - descriptor.timestamp) / 1000;
+	if (animationStage < 1.5){
+		for (var i=descriptor.affectedTiles.length; i--; ){
+			c.save();
+			var idx = descriptor.affectedTiles[i];
+			var x = idx % 8;
+			var y = idx / 8 | 0;
+			if (!i){
+				x += Math.sin(i + animationStage * 79) * .05 * animationStage;
+				y += Math.cos(i + animationStage * 69) * .05 * animationStage;
+			}
+
+			c.globalAlpha = 1.5 - animationStage;
+			c.drawImage(hoveredTiles[descriptor.field[idx]], x * 90 + 7, y * 90 + 7);
+			c.globalCompositeOperation = 'source-atop';
+
+			c.globalAlpha = animationStage;
+			c.fillStyle = ['#0B0', '#00C', '#DD0', '#C00'][descriptor.destructionStyle[idx]] || '#FFF';
+			c.fillRect(x * 90 + 7, y * 90 + 7, 80, 80);
+
+			c.restore();
+		}
+		return 1;
+	}
 }
 
 function sweep(){
@@ -838,47 +858,45 @@ function explosion(){
 	for (var i=64; i--;){
 		var explosiveTile = field[i];
 		if (explosiveTile > 16){
-			var destroyedBy = {};
-			destroyedBy[i] = 0; // Destroys itself
-			var affectedTiles = [];
+			var destructionStyle = {};
+			var affectedTiles = [i];
 			blockingAnimations.push({
 				'fn': animationExplosion,
 				'affectedTiles': affectedTiles, // Will be filled later, store by reference
-				'time': +new Date,
+				'timestamp': +new Date,
 				'field': field.slice(), // Copy of the entire field
-				'destroyedBy': destroyedBy
+				'destructionStyle': destructionStyle
 			});
-			if (explosiveTile & TILE_EARTH){
-				var earthDestroyed = [];
+			field[i] = 0;
+			if (explosiveTile & TILE_EARTH){ // Earth: 8 random tiles
 				for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
 					var idx = Math.random() * 64 | 0; // Get completely random index
-					if (!destroyedBy[idx] && field[idx]){
+					if (!destructionStyle[idx] && field[idx]){
 						// If tile exists on filed, not the Q-earth tile itself, and not yet picked
-						destroyedBy[idx] = TILE_EARTH;
+						destructionStyle[idx] = 0;
 						j--;
 					};
 				}
 			}
-			if (explosiveTile & TILE_FIRE){
+			if (explosiveTile & TILE_FIRE){ // Fire: 8 nearest tiles
 				for (var j=2;~j--;){ // Not the loop you can see every day. 1..-1
 					for (var k=2;~k--;){
 						var idx = i + j * 8 + k;
-						var x = (i % 8) + k;
-						if (~x & 8 && field[idx]){ // x != -1 and  x != 8 and within board
-							destroyedBy[idx] = TILE_FIRE;
+						if (~(i % 8 + k) & 8 && field[idx]){ // x != -1 and  x != 8 and within board
+							destructionStyle[idx] = 3;
 						}
 					}
 				}
 			}
-			for (var j=64; j--; ){
+			for (var j=64; j--; ){ // Water / Air: Row / Column
 				if (j >> 3 == i >> 3 && field[j] && explosiveTile & TILE_WATER){
-					destroyedBy[j] = TILE_WATER;
+					destructionStyle[j] = 1;
 				}
 				if (j % 8 == i % 8 && field[j] && explosiveTile & TILE_AIR){
-					destroyedBy[j] = TILE_AIR;
+					destructionStyle[j] = 2;
 				}
 			}
-			for (j in destroyedBy){
+			for (j in destructionStyle){
 				affectedTiles.push(+j);
 				field[j] = 0;
 			}
