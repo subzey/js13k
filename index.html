@@ -718,7 +718,7 @@ function animationDisappear(descriptor){
 
 function animationExplosion(descriptor){
 	var animationStage = (new Date - descriptor.timestamp) / 1000;
-	if (animationStage < 1.5){
+	if (animationStage < 1){
 		for (var i=descriptor.affectedTiles.length; i--; ){
 			c.save();
 			var idx = descriptor.affectedTiles[i];
@@ -729,7 +729,7 @@ function animationExplosion(descriptor){
 				y += Math.cos(i + animationStage * 69) * .05 * animationStage;
 			}
 
-			c.globalAlpha = 1.5 - animationStage;
+			c.globalAlpha = 1 - animationStage;
 			c.drawImage(hoveredTiles[descriptor.field[idx]], x * 90 + 7, y * 90 + 7);
 			c.globalCompositeOperation = 'source-atop';
 
