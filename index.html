@@ -898,26 +898,21 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 	**/
 
 	animationFrameRequested = 0;
-	if (blockingAnimations[0]){
-		invalidate(); // Paint next frame until there are animations
-	} else if (recalcState){
-		if (recalcState.length & 1){
+	for (;recalcState && !blockingAnimations.length;){
+		if (recalcState.length % 2){
 			gravity();
 		} else {
 			sweep();
 		}
-		recalcState.unshift(blockingAnimations.length);
-		if (recalcState[0] + recalcState[1] == 0){ // == 0 is critical. NaN is an expected value
+		recalcState.push(blockingAnimations.length);
+		if (recalcState.slice(-2) == '0,0'){ // All the recalc functions did nothing
 			recalcState = 0; // something falsy
-			// Do not invalidate, we're in idle state until player do something
-		} else {
-			invalidate();
 		}
 	}
-	draw();
-	if (nonblockingAnimations[0]){
-		invalidate();
+	if (blockingAnimations[0] || nonblockingAnimations[0]){
+		invalidate(); // Paint next frame until there are animations
 	}
+	draw();
 }
 
 invalidate();
