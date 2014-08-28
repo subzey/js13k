@@ -716,6 +716,13 @@ function animationDisappear(descriptor){
 	}
 }
 
+function animationExplosion(descriptor){
+	if (new Date - descriptor.timestamp > 3000){
+		return;
+	};
+	return;
+}
+
 function sweep(){
 	console.log('sweep');
 	var triples = [];
@@ -801,7 +808,6 @@ function getMainTile(triple, hint){
 function gravity(){
 	console.log('gravity');
 	var offscreenStack = []; // Tiles that are falling offscreen
-	var now = +new Date();
 	for (var i = 64; i--;){ // Lower 7 rows
 		if (!field[i]){ // Field is empty
 			for (var j=i; j>=0; j-=8){
@@ -820,9 +826,62 @@ function gravity(){
 			blockingAnimations.push({
 				'fn': animationFalling, // Type of animation
 				'affectedTiles': [i], // Tiles that are affected (always an array)
-				'timestamp': now, // Start of the animation
+				'timestamp': +new Date, // Start of the animation
 				'fallFrom': fallFrom // custom for "gravity" - where tile is fall from
 			});
+		}
+	}
+}
+
+function explosion(){
+	// There can be only one explosive tile on a board. At least, it is supposed so.
+	for (var i=64; i--;){
+		var explosiveTile = field[i];
+		if (explosiveTile > 16){
+			var destroyedBy = {};
+			destroyedBy[i] = 0; // Destroys itself
+			var affectedTiles = [];
+			blockingAnimations.push({
+				'fn': animationExplosion,
+				'affectedTiles': affectedTiles, // Will be filled later, store by reference
+				'time': +new Date,
+				'field': field.slice(), // Copy of the entire field
+				'destroyedBy': destroyedBy
+			});
+			if (explosiveTile & TILE_EARTH){
+				var earthDestroyed = [];
+				for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
+					var idx = Math.random() * 64 | 0; // Get completely random index
+					if (!destroyedBy[idx] && field[idx]){
+						// If tile exists on filed, not the Q-earth tile itself, and not yet picked
+						destroyedBy[idx] = TILE_EARTH;
+						j--;
+					};
+				}
+			}
+			if (explosiveTile & TILE_FIRE){
+				for (var j=2;~j--;){ // Not the loop you can see every day. 1..-1
+					for (var k=2;~k--;){
+						var idx = i + j * 8 + k;
+						var x = (i % 8) + k;
+						if (~x & 8 && field[idx]){ // x != -1 and  x != 8 and within board
+							destroyedBy[idx] = TILE_FIRE;
+						}
+					}
+				}
+			}
+			for (var j=64; j--; ){
+				if (j >> 3 == i >> 3 && field[j] && explosiveTile & TILE_WATER){
+					destroyedBy[j] = TILE_WATER;
+				}
+				if (j % 8 == i % 8 && field[j] && explosiveTile & TILE_AIR){
+					destroyedBy[j] = TILE_AIR;
+				}
+			}
+			for (j in destroyedBy){
+				affectedTiles.push(+j);
+				field[j] = 0;
+			}
 		}
 	}
 }
@@ -899,13 +958,9 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 
 	animationFrameRequested = 0;
 	for (;recalcState && !blockingAnimations.length;){
-		if (recalcState.length % 2){
-			gravity();
-		} else {
-			sweep();
-		}
+		[explosion, sweep, gravity][recalcState.length % 3]();
 		recalcState.push(blockingAnimations.length);
-		if (recalcState.slice(-2) == '0,0'){ // All the recalc functions did nothing
+		if (recalcState.slice(-3) == '0,0,0'){ // All the recalc functions did nothing
 			recalcState = 0; // something falsy
 		}
 	}
