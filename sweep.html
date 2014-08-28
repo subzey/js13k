@@ -57,29 +57,26 @@ function sweep(){
 	return triples;
 }
 function getMainTile(triple){
-	var maxScore = 0;
-	for (var i=triple.length; i--; ){
-		var idx = triple[i];
-		var score = 0;
-		if (idx % 8 > 0 && ~triple.indexOf(idx - 1)) score++;
-		if (idx % 8 < 7 && ~triple.indexOf(idx + 1)) score++;
-		if (~triple.indexOf(idx - 8)) score++;
-		if (~triple.indexOf(idx + 8)) score++;
-		if (score > maxScore){
-			var out = [];
-			maxScore = score;
-		}
-		if (score == maxScore){ // Not else if!
-			out.push(idx);
-		}
-	}
-	if (out.length > 2){
-		var subQuery = getMainTile(out);
-		if (subQuery != null){
-			out = [subQuery];
+	for (var i=5; i--; ){
+		for (var j=8; j--; ){
+			var flag = 1;
+			var idx = i + j * 8;
+			for (var k=5; k--; ){
+				flag  = flag && ~triple.indexOf(idx + k);
+			}
+			if (flag){
+				return idx + 2;
+			}
+			var flag = 1;
+			var idx = i * 8 + j;
+			for (var k=5; k--; ){
+				flag  = flag && ~triple.indexOf(idx + k * 8);
+			}
+			if (flag){
+				return idx + 16;
+			}
 		}
 	}
-	return out[0];
 }
 
 </script>
@@ -108,6 +105,8 @@ for (var i=triples.length; i--; ){
 }
 
 triples.map(getMainTile).forEach(function(mainTile){
-	tableCells[mainTile].innerHTML = '(' + field[mainTile] + ')';
+	if (mainTile != null){
+		tableCells[mainTile].innerHTML = '(' + field[mainTile] + ')';
+	}
 });
 </script>
