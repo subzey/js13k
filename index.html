@@ -517,18 +517,16 @@ for (;blockingAnimations.length;){ // repeat until there's no blocking animation
 		// Push random tiles
 		field[i]=getNewTileIndex();
 	}
+
+	field[36] = 16; // debug
+	field[35] = 15; // debug
+
 	// Cleanup all animations
 	blockingAnimations = [];
 	// Fast forward sweep/gravity
 	sweep();
 	gravity();
 }
-
-field[0 + 24 + 7] = 2; // Debug
-field[8 + 24 + 7] = 2; // Debug
-field[16 + 24 + 7] = 2; // Debug
-field[24 + 24 + 7] = 2; // Debug
-field[32 + 24 + 7] = 2; // Debug
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
 var dragStartCoords = 0; // Something falsy, but not null/undefined
@@ -719,25 +717,59 @@ function animationDisappear(descriptor){
 function animationExplosion(descriptor){
 	var animationStage = (new Date - descriptor.timestamp) / 1000;
 	if (animationStage < 1){
-		for (var i=descriptor.affectedTiles.length; i--; ){
-			c.save();
-			var idx = descriptor.affectedTiles[i];
+		var tile = descriptor.field[descriptor.affectedTiles[0]];
+		if (tile == 31){
+			var idx = descriptor.affectedTiles[0];
 			var x = idx % 8;
 			var y = idx / 8 | 0;
-			if (!i){
-				x += Math.sin(i + animationStage * 79) * .05 * animationStage;
-				y += Math.cos(i + animationStage * 69) * .05 * animationStage;
-			}
-
+			c.save();
 			c.globalAlpha = 1 - animationStage;
+			c.fillStyle = '#FFF';
+			c.fillRect(0,0,1e3,1e3);
+			c.globalAlpha = Math.min((1 - animationStage) * 2, 1);
 			c.drawImage(hoveredTiles[descriptor.field[idx]], x * 90 + 7, y * 90 + 7);
-			c.globalCompositeOperation = 'source-atop';
-
-			c.globalAlpha = animationStage;
-			c.fillStyle = ['#0B0', '#00C', '#DD0', '#C00'][descriptor.destructionStyle[idx]] || '#FFF';
-			c.fillRect(x * 90 + 7, y * 90 + 7, 80, 80);
-
 			c.restore();
+		} else {
+			for (var i=descriptor.affectedTiles.length; i--; ){
+				c.save();
+				var idx = descriptor.affectedTiles[i];
+				var x = idx % 8;
+				var y = idx / 8 | 0;
+				if (!i){
+					c.globalAlpha = Math.max((.7 - animationStage) * .7, 0);
+					if (tile & TILE_FIRE){
+						c.beginPath();
+						c.arc(x * 90 + 47, y * 90 + 47, animationStage * 400, 0, Math.PI * 2, false);
+						c.fillStyle = '#F88';
+						c.fill();
+					}
+					if (tile & TILE_WATER){
+						c.beginPath();
+						c.fillStyle = '#88F';
+						c.fillRect(x * 90 + 47 - animationStage * 1e3, y * 90 + 7, animationStage * 2e3, 80);
+					}
+					if (tile & TILE_AIR){
+						c.beginPath();
+						c.fillStyle = '#88F';
+						c.fillRect(x * 90 + 7, y * 90 + 47 - animationStage * 1e3, 80, animationStage * 2e3);
+					}
+
+					x += Math.sin(i + animationStage * 79) * .05 * animationStage;
+					y += Math.cos(i + animationStage * 69) * .05 * animationStage;
+				}
+
+				c.globalAlpha = 1 - animationStage;
+				c.drawImage(hoveredTiles[descriptor.field[idx]], x * 90 + 7, y * 90 + 7);
+				c.globalCompositeOperation = 'source-atop';
+
+				if (descriptor.destructionStyle[idx] == 0){
+					c.globalAlpha = animationStage;
+					c.fillStyle = '#0B0';
+					c.fillRect(x * 90 + 7, y * 90 + 7, 80, 80);
+				}
+
+				c.restore();
+			}
 		}
 		return 1;
 	}
@@ -867,38 +899,46 @@ function explosion(){
 				'field': field.slice(), // Copy of the entire field
 				'destructionStyle': destructionStyle
 			});
-			field[i] = 0;
-			if (explosiveTile & TILE_EARTH){ // Earth: 8 random tiles
-				for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
-					var idx = Math.random() * 64 | 0; // Get completely random index
-					if (!destructionStyle[idx] && field[idx]){
-						// If tile exists on filed, not the Q-earth tile itself, and not yet picked
-						destructionStyle[idx] = 0;
-						j--;
-					};
+
+			if (explosiveTile & 31){
+				for (var j=64; j--; ){
+					field[j] = 0;
+					affectedTiles.push(j);
 				}
-			}
-			if (explosiveTile & TILE_FIRE){ // Fire: 8 nearest tiles
-				for (var j=2;~j--;){ // Not the loop you can see every day. 1..-1
-					for (var k=2;~k--;){
-						var idx = i + j * 8 + k;
-						if (~(i % 8 + k) & 8 && field[idx]){ // x != -1 and  x != 8 and within board
-							destructionStyle[idx] = 3;
+			} else {
+				field[i] = 0;
+				if (explosiveTile & TILE_EARTH){ // Earth: 8 random tiles
+					for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
+						var idx = Math.random() * 64 | 0; // Get completely random index
+						if (!destructionStyle[idx] && field[idx]){
+							// If tile exists on filed, not the Q-earth tile itself, and not yet picked
+							destructionStyle[idx] = 0;
+							j--;
+						};
+					}
+				}
+				if (explosiveTile & TILE_FIRE){ // Fire: 8 nearest tiles
+					for (var j=2;~j--;){ // Not the loop you can see every day. 1..-1
+						for (var k=2;~k--;){
+							var idx = i + j * 8 + k;
+							if (~(i % 8 + k) & 8 && field[idx]){ // x != -1 and  x != 8 and within board
+								destructionStyle[idx] = 3;
+							}
 						}
 					}
 				}
-			}
-			for (var j=64; j--; ){ // Water / Air: Row / Column
-				if (j >> 3 == i >> 3 && field[j] && explosiveTile & TILE_WATER){
-					destructionStyle[j] = 1;
+				for (var j=64; j--; ){ // Water / Air: Row / Column
+					if (j >> 3 == i >> 3 && field[j] && explosiveTile & TILE_WATER){
+						destructionStyle[j] = 1;
+					}
+					if (j % 8 == i % 8 && field[j] && explosiveTile & TILE_AIR){
+						destructionStyle[j] = 2;
+					}
 				}
-				if (j % 8 == i % 8 && field[j] && explosiveTile & TILE_AIR){
-					destructionStyle[j] = 2;
+				for (j in destructionStyle){
+					affectedTiles.push(+j);
+					field[j] = 0;
 				}
-			}
-			for (j in destructionStyle){
-				affectedTiles.push(+j);
-				field[j] = 0;
 			}
 		}
 	}
