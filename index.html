@@ -900,7 +900,7 @@ function explosion(){
 				'destructionStyle': destructionStyle
 			});
 
-			if (explosiveTile & 31){
+			if (explosiveTile == 31){
 				for (var j=64; j--; ){
 					field[j] = 0;
 					affectedTiles.push(j);
