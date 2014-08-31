@@ -1,4 +1,5 @@
 <body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
+<meta name="viewport" content="width=724,height=759">
 <div style="padding:10px;height:15px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
 <script>
@@ -530,7 +531,7 @@ function addScore(increment, idx){
 }
 
 var cascade = 0;
-
+var uiLocked = 0;
 var field = [];
 // Fill field ensuring there's no triples
 for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
@@ -613,6 +614,7 @@ a.onmousemove = function(e){
 				recalcState = recalcState || [];
 
 				addScore(getTileGeneration(field[idx]) * 10, idx);
+				uiLocked = 1;
 
 			}
 			invalidate();
@@ -765,7 +767,7 @@ function animationExplosion(descriptor){
 					}
 					if (tile & TILE_AIR){
 						c.beginPath();
-						c.fillStyle = '#88F';
+						c.fillStyle = '#FF0';
 						c.fillRect(x * 90 + 7, y * 90 + 47 - animationStage * 1e3, 80, animationStage * 2e3);
 					}
 
@@ -1025,8 +1027,8 @@ function draw(){
 		if (!~blockedTiles.indexOf(i) && field[i]){
 			var x = i % 8;
 			var y = i / 8 | 0;
-			// Highlight current cell only if no animations
-			var imageArray = (!blockingAnimations[0] && i==(dragStartCoords||hoveredCoords)[4])?hoveredTiles:tiles;
+			// Highlight current cell only if UI not locked
+			var imageArray = (!uiLocked && i==(dragStartCoords||hoveredCoords)[4])?hoveredTiles:tiles;
 			c.drawImage(imageArray[field[i]], x * 90 + 7, y * 90 + 7);
 		}
 	}
@@ -1062,10 +1064,12 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 
 	animationFrameRequested = 0;
 	for (;recalcState && !blockingAnimations.length;){
+		uiLocked = 1;
 		[explosion, sweep, gravity][recalcState.length % 3]();
 		recalcState.push(blockingAnimations.length);
 		if (recalcState.slice(-3) == '0,0,0'){ // All the recalc functions did nothing
 			recalcState = 0; // something falsy
+			uiLocked = 0;
 		}
 	}
 	if (blockingAnimations[0] || nonblockingAnimations[0]){
