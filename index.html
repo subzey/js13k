@@ -554,18 +554,19 @@ var dragStartCoords = 0; // Something falsy, but not null/undefined
 function extractCoords(e){
 	e.preventDefault();
 	e = e.touches ? e.touches[0] : e;
-	var a = [
-		(1/e.offsetX) ? e.offsetX : e.layerX, // [0] - Relative X
-		(1/e.offsetX) ? e.offsetY : e.layerY  // [1] - Relative Y
+	var coords = [
+		// It's 2014, and we still have to do it
+		e.pageX - a.offsetLeft, // [0] - Relative X
+		e.pageY - a.offsetTop,  // [1] - Relative Y
 	];
-	a = a.concat(a.map(getTileByCoord)); // [2], [3] - tile X/Y
-	a[4] = a[3]*8 + a[2];
-	return a;
+	coords = coords.concat(coords.map(getTileByCoord)); // [2], [3] - tile X/Y
+	coords[4] = coords[3]*8 + coords[2];
+	return coords;
 }
 
 function getTileByCoord(coord){
 	coord = (coord - 2) / 90 | 0;
-	if (coord & 8) return; // if (coord == -1 || coord == 8) return undefined (-> NaN)
+	if (coord < 0 || coord > 7) return;
 	return coord;
 }
 
@@ -629,8 +630,8 @@ a.onmouseout = function(e){ // e argument is unused
 	invalidate();
 }
 a.ontouchstart = a.onmousedown = function(e){
-	e.preventDefault();
-	if (!blockingAnimations[0]){
+	console.log(e);
+	if (!uiLocked){
 		var coords = extractCoords(e);
 		dragStartCoords[4] == coords[4] || invalidate();
 		dragStartCoords = coords;
