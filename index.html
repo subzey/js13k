@@ -552,6 +552,8 @@ var hoveredCoords = 0; // Something falsy, but not null/undefined
 var dragStartCoords = 0; // Something falsy, but not null/undefined
 
 function extractCoords(e){
+	e.preventDefault();
+	e = e.touches ? e.touches[0] : e;
 	var a = [
 		(1/e.offsetX) ? e.offsetX : e.layerX, // [0] - Relative X
 		(1/e.offsetX) ? e.offsetY : e.layerY  // [1] - Relative Y
@@ -568,7 +570,7 @@ function getTileByCoord(coord){
 }
 
 // UI
-a.onmousemove = function(e){
+a.ontouchmove = a.onmousemove = function(e){
 	var coords = extractCoords(e);
 	// Request repaint only if hovered tile changed
 	// Keep in mind, coords[4] may be `undefined`!
@@ -626,7 +628,7 @@ a.onmouseout = function(e){ // e argument is unused
 	hoveredCoords = 0;
 	invalidate();
 }
-a.onmousedown = function(e){
+a.ontouchstart = a.onmousedown = function(e){
 	e.preventDefault();
 	if (!blockingAnimations[0]){
 		var coords = extractCoords(e);
@@ -634,7 +636,7 @@ a.onmousedown = function(e){
 		dragStartCoords = coords;
 	}
 }
-a.onmouseup = function(e){  // e argument is unused
+a.ontouchend = a.onmouseup = function(e){  // e argument is unused
 	dragStartCoords = 0;
 	invalidate();
 }
