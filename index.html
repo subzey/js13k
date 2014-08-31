@@ -518,21 +518,20 @@ function getTileGeneration(tile){
 }
 
 function addScore(increment, idx){
-	if (gameStarted){
-		score += increment;
-		s.innerHTML = score;
-		nonblockingAnimations.push({
-			'fn': animationScore,
-			'affectedTiles': [],
-			'timestamp': +new Date,
-			'increment': increment,
-			'idx': idx
-		})
-	}
+	score += increment;
+	s.innerHTML = score;
+	nonblockingAnimations.push({
+		'fn': animationScore,
+		'affectedTiles': [],
+		'timestamp': +new Date,
+		'increment': increment,
+		'idx': idx
+	});
 }
 
+var cascade = 0;
+
 var field = [];
-var gameStarted = 0;
 // Fill field ensuring there's no triples
 for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
 	for (var i=64; i--; ){
@@ -543,11 +542,10 @@ for (;blockingAnimations.length;){ // repeat until there's no blocking animation
 	// Cleanup all animations
 	blockingAnimations = [];
 	nonblockingAnimations = [];
+	s.innerHTML = score = 0;
 	// Fast forward sweep/gravity
 	sweep();
-	gravity();
 }
-var gameStarted = 1;
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
 var dragStartCoords = 0; // Something falsy, but not null/undefined
@@ -803,18 +801,19 @@ function animationScore(descriptor){
 		c.fillStyle = '#FFFFFF';
 		var x = descriptor.idx % 8;
 		var y = descriptor.idx / 8 | 0;
-		c.translate(x * 90 + 47, y * 90 + 57 - animationStage*50);
+		c.translate(x * 90 + 47, y * 90 + 57);
 		c.globalAlpha = Math.min(2 - animationStage * 2, 1);
-		var scale = Math.log(descriptor.increment) * Math.cos(animationStage);
+		var scale = Math.log(descriptor.increment) * Math.cos(animationStage / 2);
 		c.scale(scale, scale);
-		c.fillText(descriptor.increment, 0, 0);
+		c.fillText(descriptor.increment, 0, -animationStage * 15);
 		c.restore();
 		return 1;
 	}
 }
 
 function sweep(){
-	console.log('sweep');
+	cascade++;
+	console.log('sweep, x' + cascade);
 	var triples = [];
 	// Pass 1: Find triples
 	for (var i=8-2; i--; ){
@@ -867,8 +866,12 @@ function sweep(){
 		blockingAnimations.push(animation);
 
 		// Main tile cannot be equal 0. Supposedly.
-		addScore(100 * 1 << (triple.length - 2), animation.q || triple[1]);
+		addScore(cascade * 100 * 1 << (triple.length - 2), animation.q || triple[1]);
 	}
+
+	if (!triples.length){
+		cascade = 0;
+	};
 }
 
 // Get "main" tile from adjacent ones
@@ -978,6 +981,8 @@ function explosion(){
 					field[j] = 0;
 				}
 			}
+
+			addScore(getTileGeneration(explosiveTile) * 100, i);
 		}
 	}
 }
