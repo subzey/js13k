@@ -1,4 +1,6 @@
-<body bgcolor=0><canvas id="a" width=724 height=724></canvas>
+<body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
+<div style="padding:10px;height:15px">Score <b id=s>0</b></div>
+<canvas id="a"></canvas>
 <script>
 // Tiles
 var titles = ['Void'];
@@ -70,7 +72,6 @@ for (var code=64; code--; ){
 			c.strokeStyle = c.fillStyle = drawPosition & 1 ? '#000' : '#FFF';
 			c.globalAlpha = drawPosition ^ 1 ? 0.3 : activityState || .7;
 
-			c.font = '16px';
 			c.textAlign = 'center';
 			c.fillText([titles[code]], 40, 70);
 
@@ -510,7 +511,28 @@ function getNewTileIndex(){
 var blockingAnimations = [0]; // Anything, just to ensure field filling loop works for the first time
 var nonblockingAnimations = [];
 
+var score = 0;
+
+function getTileGeneration(tile){
+	return tile.toString(2).replace(/0/g,'').length;
+}
+
+function addScore(increment, idx){
+	if (gameStarted){
+		score += increment;
+		s.innerHTML = score;
+		nonblockingAnimations.push({
+			'fn': animationScore,
+			'affectedTiles': [],
+			'timestamp': +new Date,
+			'increment': increment,
+			'idx': idx
+		})
+	}
+}
+
 var field = [];
+var gameStarted = 0;
 // Fill field ensuring there's no triples
 for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
 	for (var i=64; i--; ){
@@ -518,15 +540,14 @@ for (;blockingAnimations.length;){ // repeat until there's no blocking animation
 		field[i]=getNewTileIndex();
 	}
 
-	field[36] = 16; // debug
-	field[35] = 15; // debug
-
 	// Cleanup all animations
 	blockingAnimations = [];
+	nonblockingAnimations = [];
 	// Fast forward sweep/gravity
 	sweep();
 	gravity();
 }
+var gameStarted = 1;
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
 var dragStartCoords = 0; // Something falsy, but not null/undefined
@@ -546,8 +567,6 @@ function getTileByCoord(coord){
 	if (coord & 8) return; // if (coord == -1 || coord == 8) return undefined (-> NaN)
 	return coord;
 }
-
-var lastMergedTileIndex = -1;
 
 // UI
 a.onmousemove = function(e){
@@ -582,7 +601,6 @@ a.onmousemove = function(e){
 					'sign': sign
 				});
 			} else {
-				lastMergedTileIndex = field[dragStartCoords[4]];
 				blockingAnimations = [{
 					'fn': animationMerge, // Type of animation
 					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
@@ -596,6 +614,7 @@ a.onmousemove = function(e){
 				//
 				recalcState = recalcState || [];
 
+				addScore(getTileGeneration(field[idx]) * 10, idx);
 
 			}
 			invalidate();
@@ -657,8 +676,6 @@ function animationMerge(descriptor){
 			var topY = Math.max(dstY, srcY) * 90 + 7;
 			var rightX = Math.min(dstX, srcX) * 90 + 7 + 80;
 			var bottomY = Math.min(dstY, srcY) * 90 + 7 + 80;
-
-			console.log(leftX, rightX, topY, bottomY);
 
 			if (rightX > leftX && bottomY > topY){
 				c.globalCompositeOperation = 'source-atop';
@@ -775,6 +792,27 @@ function animationExplosion(descriptor){
 	}
 }
 
+function animationScore(descriptor){
+	var animationStage = (new Date - descriptor.timestamp - 400) / 600;
+	if (animationStage < 0){
+		return 1;
+	}
+	if (animationStage < 1){
+		c.save();
+		c.textAlign = 'center';
+		c.fillStyle = '#FFFFFF';
+		var x = descriptor.idx % 8;
+		var y = descriptor.idx / 8 | 0;
+		c.translate(x * 90 + 47, y * 90 + 57 - animationStage*50);
+		c.globalAlpha = Math.min(2 - animationStage * 2, 1);
+		var scale = Math.log(descriptor.increment) * Math.cos(animationStage);
+		c.scale(scale, scale);
+		c.fillText(descriptor.increment, 0, 0);
+		c.restore();
+		return 1;
+	}
+}
+
 function sweep(){
 	console.log('sweep');
 	var triples = [];
@@ -802,7 +840,10 @@ function sweep(){
 			}
 		}
 		// Pass 3: Unique
-		var triple = triples[i].sort(); // .sort() is to be predictable
+		var triple = triples[i].sort(function(a,b){
+			// Oh, this default javascript sort...
+			return a-b;
+		}); // .sort() is to be predictable
 
 		var animation = {
 			'fn': animationDisappear,
@@ -819,22 +860,19 @@ function sweep(){
 			}
 		}
 		animation.affectedTiles = triple;
-		animation.q = getMainTile(triple, lastMergedTileIndex);
-		if (animation.q+1){ // Not -1 or undefined
+		animation.q = getQTile(triple);
+		if (animation.q){ // Not -1 or undefined
 			field[animation.q] = 16; // Quintessence
 		}
 		blockingAnimations.push(animation);
 
+		// Main tile cannot be equal 0. Supposedly.
+		addScore(100 * 1 << (triple.length - 2), animation.q || triple[1]);
 	}
-	lastMergedTileIndex = -1;
 }
 
 // Get "main" tile from adjacent ones
-function getMainTile(triple, hint){
-	// If we have pre-set preferrable index, and it is in triple, just return it
-	if (hint > 0 && ~triple.indexOf(hint)){
-		return hint;
-	}
+function getQTile(triple){
 	for (var i=5; i--; ){
 		for (var j=8; j--; ){
 			var flag = 1;
@@ -975,6 +1013,8 @@ function draw(){
 		}
 	}
 
+	c.save();
+	c.globalCompositeOperation = 'destination-over'; // Draw all ordinary tiles below
 	// Draw not blocked tiles
 	for (var i=64; i--; ){
 		if (!~blockedTiles.indexOf(i) && field[i]){
@@ -985,6 +1025,7 @@ function draw(){
 			c.drawImage(imageArray[field[i]], x * 90 + 7, y * 90 + 7);
 		}
 	}
+	c.restore(); // undo destination-over
 }
 
 var recalcState = [];
