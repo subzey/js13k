@@ -1,4 +1,6 @@
 <body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
+<title>Quintessence</title>
+<link rel=icon id=r>
 <meta name="viewport" content="width=724,height=759">
 <center id=m style="position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px">
 	<h1>Quintessence</h1><br>
@@ -469,6 +471,9 @@ for (var code=64; code--; ){
 		var image = new Image();
 		image.src = a.toDataURL();
 		if (activityState){
+			if (code == 16){ // Favicon
+				r.href = image.src;
+			}
 			hoveredTiles[code] = image;
 		} else {
 			tiles[code] = image;
