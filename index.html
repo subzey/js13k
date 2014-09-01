@@ -1,5 +1,10 @@
 <body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
 <meta name="viewport" content="width=724,height=759">
+<center id=m style="position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px">
+	<h1>Quintessence</h1>
+	<a onclick=start()>Start</a>
+	<a>Continue</a>
+</center>
 <div style="padding:10px;height:15px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
 <script>
@@ -509,7 +514,7 @@ function getNewTileIndex(){
 	return [1,2,4,8][Math.random() * 4 | 0];
 }
 
-var blockingAnimations = [0]; // Anything, just to ensure field filling loop works for the first time
+var blockingAnimations = []; // Anything, just to ensure field filling loop works for the first time
 var nonblockingAnimations = [];
 
 var score = 0;
@@ -531,21 +536,37 @@ function addScore(increment, idx){
 }
 
 var cascade = 0;
-var uiLocked = 0;
+var uiLocked = 1;
+var gameover = 1;
 var field = [];
-// Fill field ensuring there's no triples
-for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
-	for (var i=64; i--; ){
-		// Push random tiles
-		field[i] = field[i] || getNewTileIndex();
-	}
 
-	// Cleanup all animations
-	blockingAnimations = [];
-	nonblockingAnimations = [];
-	s.innerHTML = score = 0;
-	// Fast forward sweep/gravity
-	sweep();
+function start(){ // or restart
+	field = [];
+	// Fill field ensuring there's no triples
+	do { // repeat until there's no blocking animations (sweep/gravity did nothing)
+		for (var i=64; i--; ){
+			// Push random tiles
+			field[i] = field[i] & 15 || getNewTileIndex();
+		}
+
+		// Cleanup all animations
+		blockingAnimations = [];
+		nonblockingAnimations = [];
+		s.innerHTML = score = 0;
+		// Fast forward sweep/gravity
+		sweep();
+	} while (blockingAnimations.length);
+	gameover = 0;
+	m.style.display = 'none';
+	for (var i=64; i--; ){
+		blockingAnimations.push({
+			'fn': animationFalling, // Type of animation
+			'affectedTiles': [i], // Tiles that are affected (always an array)
+			'timestamp': +new Date, // Start of the animation
+			'fallFrom': -1 // custom for "gravity" - where tile is fall from
+		});
+	}
+	invalidate();
 }
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
@@ -992,6 +1013,23 @@ function explosion(){
 	}
 }
 
+function movesLeft(){
+	var moves = [];
+	for (var i=8; i--; ){
+		for (var j=7; j--; ){
+			var idx = i * 8 + j;
+			if (!(field[idx] & field[idx + 1])){
+				moves.push([idx, 0]);
+			}
+			var idx = j * 8 + i;
+			if (!(field[idx] & field[idx + 8])){
+				moves.push([idx, 1]);
+			}
+		}
+	}
+	return moves;
+}
+
 function draw(){
 	console.log('draw');
 	a.width=724;
@@ -1042,7 +1080,7 @@ var recalcState = [];
 var animationFrameRequested = 0;
 
 function invalidate(){
-	if (!animationFrameRequested){
+	if (!animationFrameRequested && !gameover){
 		requestAnimationFrame(onFrame);
 		animationFrameRequested = 1;
 	}
@@ -1064,7 +1102,6 @@ Each action changes field state to the final and registers blocking animation.
 Only one action is produced at once. Otherwise field may change dramatically and we'll paint nonsence.
 These actions are in the loop that finishes if neither gravity, nor sweep made nothing.
 	**/
-
 	animationFrameRequested = 0;
 	for (;recalcState && !blockingAnimations.length;){
 		uiLocked = 1;
@@ -1073,6 +1110,9 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 		if (recalcState.slice(-3) == '0,0,0'){ // All the recalc functions did nothing
 			recalcState = 0; // something falsy
 			uiLocked = 0;
+			if (!movesLeft.length){
+
+			}
 		}
 	}
 	if (blockingAnimations[0] || nonblockingAnimations[0]){
@@ -1081,8 +1121,10 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 	draw();
 }
 
-invalidate();
+// start();
 
 
 </script>
-
+<style>
+#m a {display:block; border: solid 1px; padding: 10px; cursor: pointer; width: 150px; margin: 9px}
+#m a:hover {background: #fff; color: #000}
