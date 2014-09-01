@@ -1,13 +1,18 @@
 <body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
 <meta name="viewport" content="width=724,height=759">
 <center id=m style="position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px">
-	<h1>Quintessence</h1>
+	<h1>Quintessence</h1><br>
 	<a onclick=start()>Start</a>
-	<a>Continue</a>
 </center>
 <div style="padding:10px;height:15px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
 <script>
+// Add continue button
+if ((self.localStorage||{})['Quintessence.save']){
+	m.innerHTML += '<a onclick=load()>Continue';
+}
+
+
 // Tiles
 var titles = ['Void'];
 
@@ -557,6 +562,7 @@ function start(){ // or restart
 		sweep();
 	} while (blockingAnimations.length);
 	gameover = 0;
+	uiLocked = 0;
 	m.style.display = 'none';
 	for (var i=64; i--; ){
 		blockingAnimations.push({
@@ -566,7 +572,33 @@ function start(){ // or restart
 			'fallFrom': -1 // custom for "gravity" - where tile is fall from
 		});
 	}
+	save();
 	invalidate();
+}
+
+function load(){
+	// I know, it consumes many bytes. But save state is sacred
+	try {
+		var saved = JSON.parse(localStorage['Quintessence.save']);
+		field = saved.f.map(Number); // Make sure it's an array of numbers
+		s.innerHTML = score = +saved.s; // Restore score
+		gameover = 0; // Clear game over flag. It will be set on nxt invalidation if needed.
+		m.style.display = 'none'; // Hide message
+		recalcState = []; // Init recalc
+		invalidate(); // Request next frame
+	} catch (e){
+		alert('Save state is corrupted');
+		start();
+	}
+}
+
+function save(){
+	console.log('save to localStorage');
+	(self.localStorage||{})['Quintessence.save'] = JSON.stringify({
+		'f': field,
+		's': score
+	});
+	// Yes, you can cheat here.
 }
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
@@ -634,12 +666,14 @@ a.ontouchmove = a.onmousemove = function(e){
 				// Changing field!
 				field[idx] = field[idx] | field[dragStartCoords[4]];
 				field[dragStartCoords[4]] = 0;
+
 				//
 				recalcState = recalcState || [];
 
 				addScore(getTileGeneration(field[idx]) * 10, idx);
 				uiLocked = 1;
 
+				save();
 			}
 			invalidate();
 			dragStartCoords = 0;
@@ -1105,16 +1139,24 @@ Only one action is produced at once. Otherwise field may change dramatically and
 These actions are in the loop that finishes if neither gravity, nor sweep made nothing.
 	**/
 	animationFrameRequested = 0;
-	for (;recalcState && !blockingAnimations.length;){
+	for (;recalcState && !blockingAnimations[0];){
 		uiLocked = 1;
 		[explosion, sweep, gravity][recalcState.length % 3]();
 		recalcState.push(blockingAnimations.length);
 		if (recalcState.slice(-3) == '0,0,0'){ // All the recalc functions did nothing
 			recalcState = 0; // something falsy
 			uiLocked = 0;
-			if (!movesLeft.length){
-
+			if (!movesLeft().length){
+				// "Game over man, the end"
+				m.innerHTML = '<h1>Game Over</h1><p>Your final score is<h3>' + score + '</h3><a target=_blank href="//twitter.com/intent/tweet?text=I scored '+ score +' in Quintessence, a %23js13k game.&url=' + location + '&hashtags=QuintessenceGame">Tweet my score<a onclick=start()>Start over';
+				m.style.display = 'block';
+				delete (self.localStorage||{})['Quintessence.save'];
+				gameover = 1;
+				uiLocked = 1;
 			}
+		}
+		if (blockingAnimations[0]){
+			save();
 		}
 	}
 	if (blockingAnimations[0] || nonblockingAnimations[0]){
@@ -1124,9 +1166,9 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 }
 
 // start();
-
-
 </script>
 <style>
-#m a {display:block; border: solid 1px; padding: 10px; cursor: pointer; width: 150px; margin: 9px}
-#m a:hover {background: #fff; color: #000}
+a{display:block;border:solid 1px;padding:10px;cursor:pointer;width:150px;margin:9px}
+a:hover{background:#fff;color:#000}
+:link{color:#55acee;text-decoration:none}
+:link:hover{background:#55acee}
