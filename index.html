@@ -1081,7 +1081,9 @@ var animationFrameRequested = 0;
 
 function invalidate(){
 	if (!animationFrameRequested && !gameover){
-		requestAnimationFrame(onFrame);
+		// requestAnimationFrame or setTimeout - whichever is supported
+		// 2nd arg to rAF is ignored
+		(self.requestAnimationFrame || setTimeout)(onFrame, 33);
 		animationFrameRequested = 1;
 	}
 }
