@@ -537,7 +537,7 @@ var field = [];
 for (;blockingAnimations.length;){ // repeat until there's no blocking animations (sweep/gravity did nothing)
 	for (var i=64; i--; ){
 		// Push random tiles
-		field[i]=getNewTileIndex();
+		field[i] = field[i] || getNewTileIndex();
 	}
 
 	// Cleanup all animations
@@ -957,7 +957,7 @@ function explosion(){
 					for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
 						var idx = Math.random() * 64 | 0; // Get completely random index
 						if (!destructionStyle[idx] && field[idx]){
-							// If tile exists on filed, not the Q-earth tile itself, and not yet picked
+							// If tile exists on field, not the Q-earth tile itself, and not yet picked
 							destructionStyle[idx] = 0;
 							j--;
 						};
