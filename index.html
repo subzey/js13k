@@ -1,5 +1,5 @@
+<link id=l>
 <title>Quintessence</title>
-<link type=icon id=f>
 <body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
 <meta name="viewport" content="width=724,height=759">
 <center id=m style="position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px">
@@ -471,11 +471,12 @@ for (var code=64; code--; ){
 		var image = new Image();
 		image.src = a.toDataURL();
 		if (activityState){
-			if (code == 16){ // Favicon
-				f.href = image.src;
-			}
 			hoveredTiles[code] = image;
 		} else {
+			if (code == 16){ // Favicon
+				l.href = image.src;
+				l.rel = 'shortcut icon';
+			}
 			tiles[code] = image;
 		}
 	}
