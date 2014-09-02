@@ -1,8 +1,8 @@
 <link id=l>
 <title>Quintessence</title>
-<body bgcolor=#333638 style="width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF">
+<body bgcolor=#333638>
 <meta name="viewport" content="width=724,height=759">
-<center id=m style="position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px">
+<center id=m>
 	<h1>Quintessence</h1><br>
 	<a onclick=start()>Start</a>
 </center>
@@ -12,6 +12,8 @@
 // Add continue button
 if ((self.localStorage||{})['Quintessence.save']){
 	m.innerHTML += '<a onclick=load()>Continue';
+} else {
+	m.innerHTML += '<a>Continue';
 }
 
 
@@ -1174,7 +1176,10 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 // start();
 </script>
 <style>
-a{display:block;border:solid 1px;padding:10px;cursor:pointer;width:150px;margin:9px}
-a:hover{background:#fff;color:#000}
-:link{color:#55acee;text-decoration:none}
-:link:hover{background:#55acee}
+body{width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF;cursor:default}
+#m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
+a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
+a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
+a[onclick]:hover{background:#fff;color:#000}
+:link{color:#55acee;border-color:#55acee;text-decoration:none}
+:link:hover{background:#55acee;color:#fff}
