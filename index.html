@@ -3,19 +3,23 @@
 <body bgcolor=#333638>
 <meta name="viewport" content="width=724,height=759">
 <center id=m>
-	<h1>Quintessence</h1><br>
-	<a onclick=start()>Start</a>
 </center>
 <div style="padding:10px;height:15px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
 <script>
-// Add continue button
-if ((self.localStorage||{})['Quintessence.save']){
-	m.innerHTML += '<a onclick=load()>Continue';
-} else {
-	m.innerHTML += '<a>Continue';
+function mainMenu(){
+	m.style.display = 'block';
+	m.innerHTML = '<h1>Quintessence</h1><br><a onclick=start()>Start';
+	// Add continue button
+	if ((self.localStorage||{})['Quintessence.save']){
+		m.innerHTML += '<a onclick=load()>Continue';
+	} else {
+		m.innerHTML += '<a>Continue';
+	}
+	m.innerHTML += '<a onclick=startDemo()>How to play'
 }
 
+mainMenu();
 
 // Tiles
 var titles = ['Void'];
@@ -537,21 +541,25 @@ function getTileGeneration(tile){
 }
 
 function addScore(increment, idx){
-	score += increment;
-	s.innerHTML = score;
-	nonblockingAnimations.push({
-		'fn': animationScore,
-		'affectedTiles': [],
-		'timestamp': +new Date,
-		'increment': increment,
-		'idx': idx
-	});
+	if (!demoScenario){
+		score += increment;
+		s.innerHTML = score;
+		nonblockingAnimations.push({
+			'fn': animationScore,
+			'affectedTiles': [],
+			'timestamp': +new Date,
+			'increment': increment,
+			'idx': idx
+		});
+	}
 }
 
 var cascade = 0;
 var uiLocked = 1;
 var gameover = 1;
 var field = [];
+var demoScenario = 0;
+var shiftScenario = 0;
 
 function start(){ // or restart
 	field = [];
@@ -570,6 +578,7 @@ function start(){ // or restart
 		sweep();
 	} while (blockingAnimations.length);
 	gameover = 0;
+	demoScenario = 0;
 	uiLocked = 0;
 	m.style.display = 'none';
 	for (var i=64; i--; ){
@@ -592,6 +601,7 @@ function load(){
 		s.innerHTML = score = +saved.s; // Restore score
 		gameover = 0; // Clear game over flag. It will be set on nxt invalidation if needed.
 		m.style.display = 'none'; // Hide message
+		demoScenario = 0;
 		recalcState = []; // Init recalc
 		invalidate(); // Request next frame
 	} catch (e){
@@ -601,12 +611,42 @@ function load(){
 }
 
 function save(){
-	console.log('save to localStorage');
-	(self.localStorage||{})['Quintessence.save'] = JSON.stringify({
-		'f': field,
-		's': score
-	});
+	if (!demoScenario){
+		console.log('save to localStorage');
+		(self.localStorage||{})['Quintessence.save'] = JSON.stringify({
+			'f': field,
+			's': score
+		});
+	}
 	// Yes, you can cheat here.
+}
+
+function startDemo(){
+	demoScenario = [
+		{
+			'text': "This game is all about merging elements.<br/>Drag any of these two tiles with mouse (or finger on touch device) to merge into a new tile.",
+			'newTiles': {59:1,51:2}
+		},
+		{
+			'text': "Perfect! You got the idea. Now try once again.<br/>Notice that some tiles cannot be merged, as tile cannot contain more than one of each basic element.",
+			'newTiles': {60:2,52:1}
+		},
+		{
+			'text': "Three identical tiles in a row disappears.",
+			'newTiles': {61:1,53:2}
+		},
+		{
+			'text': 'Create five tiles in a row and get something special.',
+			'newTiles': {58:12,59:12,60:4,61:12,62:12,52:8}
+		},
+		{
+			'text': 'This is a Quintessence, the fifth element.<br>Merge it with other tile and see what happens.',
+			'newTiles': {59:15,60:4}
+		}
+	];
+	recalcState = [];
+	gameover = 0;
+	invalidate();
 }
 
 var hoveredCoords = 0; // Something falsy, but not null/undefined
@@ -650,7 +690,7 @@ a.ontouchmove = a.onmousemove = function(e){
 				failed = 1;
 			}
 			var idx = (direction ? newTileCoord : dragStartCoords[3]) * 8 + (direction ? dragStartCoords[2] : newTileCoord);
-			if (field[idx] & field[dragStartCoords[4]]){
+			if (field[idx] & field[dragStartCoords[4]] || !field[idx]){
 				failed = 1;
 			}
 			console.log('Drag from', dragStartCoords[4], 'to', idx, 'failed: ', !!failed);
@@ -680,6 +720,7 @@ a.ontouchmove = a.onmousemove = function(e){
 
 				addScore(getTileGeneration(field[idx]) * 10, idx);
 				uiLocked = 1;
+				shiftScenario = 1;
 
 				save();
 			}
@@ -697,7 +738,7 @@ a.ontouchstart = a.onmousedown = function(e){
 	if (!uiLocked){
 		var coords = extractCoords(e);
 		dragStartCoords[4] == coords[4] || invalidate();
-		dragStartCoords = coords;
+		dragStartCoords = field[coords[4]] && coords; // Do not start drag of empty tile
 	}
 }
 a.ontouchend = a.onmouseup = function(e){  // e argument is unused
@@ -980,16 +1021,25 @@ function gravity(){
 				}
 			}
 			if (!field[i]){ // No tiles was found that can fall
-				field[i] = getNewTileIndex(); // Create new tile
+				if (demoScenario){
+					if (demoScenario[0]){
+						field[i] = field[i] || demoScenario[0].newTiles[i];
+						delete demoScenario[0].newTiles[i]
+					}
+				} else {
+					field[i] = getNewTileIndex(); // Create new tile
+				}
 				var column = i % 8;
 				fallFrom = (offscreenStack[column] = ~-offscreenStack[column]) * 1.5 + Math.random()*.25; // Decide from what position it would fall
 			}
-			blockingAnimations.push({
-				'fn': animationFalling, // Type of animation
-				'affectedTiles': [i], // Tiles that are affected (always an array)
-				'timestamp': +new Date, // Start of the animation
-				'fallFrom': fallFrom // custom for "gravity" - where tile is fall from
-			});
+			if (field[i]){
+				blockingAnimations.push({
+					'fn': animationFalling, // Type of animation
+					'affectedTiles': [i], // Tiles that are affected (always an array)
+					'timestamp': +new Date, // Start of the animation
+					'fallFrom': fallFrom // custom for "gravity" - where tile is fall from
+				});
+			}
 		}
 	}
 }
@@ -1148,6 +1198,18 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 	**/
 	animationFrameRequested = 0;
 	for (;recalcState && !blockingAnimations[0];){
+		if (demoScenario){
+			shiftScenario && demoScenario.shift();
+			shiftScenario = 0;
+			if (demoScenario[0]){
+				if (demoScenario[0].text){
+					m.innerHTML = demoScenario[0].text;
+					delete demoScenario[0].text;
+				}
+			} else {
+				setTimeout(mainMenu, 1000);
+			}
+		}
 		uiLocked = 1;
 		[explosion, sweep, gravity][recalcState.length % 3]();
 		recalcState.push(blockingAnimations.length);
