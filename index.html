@@ -22,14 +22,34 @@ function mainMenu(){
 mainMenu();
 
 // Tiles
-var titles = [, "Earth", "Water", "Mud", "Air", "Sand", "Rain", "Golem", "Fire", "Brimstone", "Alcohol", "Oil", "Phlogiston", "Diamond", "Lightning", "Life", "Quintessence",,,,,,,,,,,,,,,"Harmony"];
+var titles = [
+	,               // Binary 00000
+	"Earth",        // Binary 00001
+	"Water",        // Binary 00010
+	"Mud",          // Binary 00011
+	"Air",          // Binary 00100
+	"Sand",         // Binary 00101
+	"Rain",         // Binary 00110
+	"Golem",        // Binary 00111
+	"Fire",         // Binary 01000
+	"Brimstone",    // Binary 01001
+	"Alcohol",      // Binary 01010
+	"Oil",          // Binary 01011
+	"Phlogiston",   // Binary 01100
+	"Diamond",      // Binary 01101
+	"Lightning",    // Binary 01110
+	"Life",         // Binary 01111
+	"Quintessence", // Binary 10000
+	,,,,,,,,,,,,,,  // Bunch of explosive elements that has no title
+	"Harmony"       // Binary 11111
+];
 
 
-var TILE_EARTH = parseInt('00001', 2);
-var TILE_WATER = parseInt('00010', 2);
-var TILE_AIR   = parseInt('00100', 2);
-var TILE_FIRE  = parseInt('01000', 2);
-var TILE_QUINTESSENCE = parseInt('10000', 2);
+// var TILE_EARTH = parseInt('00001', 2);
+// var TILE_WATER = parseInt('00010', 2);
+// var TILE_AIR   = parseInt('00100', 2);
+// var TILE_FIRE  = parseInt('01000', 2);
+// var TILE_QUINTESSENCE = parseInt('10000', 2);
 
 var tiles = []; // Tile images
 var hoveredTiles = []; // Tile images
@@ -48,9 +68,9 @@ for (var code=64; code--; ){
 		value -= (x*x*x)/1200;
 		value -= (y*y*y)/1200;
 
-		imageData.data[idx*4] = value + (code == TILE_FIRE || code == TILE_AIR) * 20;
-		imageData.data[idx*4+1] = value - 5 + (code == TILE_EARTH || code == TILE_AIR) * 20;
-		imageData.data[idx*4+2] = value - 20 + (code == TILE_WATER) * 20;
+		imageData.data[idx*4] = value + (code == 8 /* TILE_FIRE */ || code == 4 /* TILE_AIR */) * 20;
+		imageData.data[idx*4+1] = value - 5 + (code == 1 /* TILE_EARTH */ || code == 4 /* TILE_AIR */) * 20;
+		imageData.data[idx*4+2] = value - 20 + (code == 2 /* TILE_WATER */) * 20;
 		imageData.data[idx*4+3] = 9000 - (x*x+y*y)*3;
 	}
 	for (var activityState = 2; activityState--; ){
@@ -406,7 +426,7 @@ for (var code=64; code--; ){
 				// Draw special Q tiles
 				c.beginPath();
 				if (code > 16 && code < 31){
-					if (bit & 1 ? code & TILE_AIR : code & TILE_WATER){
+					if (bit & 1 ? code & 4 /* TILE_AIR */ : code & 2 /* TILE_WATER */){
 						c.moveTo(40, 8);
 						c.bezierCurveTo(
 							48, 33,
@@ -414,7 +434,7 @@ for (var code=64; code--; ){
 							40, 8
 						);
 					}
-					if (code & TILE_FIRE) {
+					if (code & 8 /* TILE_FIRE */) {
 						c.moveTo(25, 25);
 						c.bezierCurveTo(
 							25, 40,
@@ -422,7 +442,7 @@ for (var code=64; code--; ){
 							25, 25
 						);
 					}
-					if (code & TILE_EARTH){
+					if (code & 1 /* TILE_EARTH */){
 						c.moveTo(11, 31);
 						c.bezierCurveTo(
 							7, 27,
@@ -838,18 +858,18 @@ function animationExplosion(descriptor){
 				var y = idx / 8 | 0;
 				if (!i){
 					c.globalAlpha = Math.max((.7 - animationStage) * .7, 0);
-					if (tile & TILE_FIRE){
+					if (tile & 8 /* TILE_FIRE */){
 						c.beginPath();
 						c.arc(x * 90 + 47, y * 90 + 47, animationStage * 400, 0, Math.PI * 2, false);
 						c.fillStyle = '#F88';
 						c.fill();
 					}
-					if (tile & TILE_WATER){
+					if (tile & 2 /* TILE_WATER */){
 						c.beginPath();
 						c.fillStyle = '#88F';
 						c.fillRect(x * 90 + 47 - animationStage * 1e3, y * 90 + 7, animationStage * 2e3, 80);
 					}
-					if (tile & TILE_AIR){
+					if (tile & 4 /* TILE_AIR */){
 						c.beginPath();
 						c.fillStyle = '#FF0';
 						c.fillRect(x * 90 + 7, y * 90 + 47 - animationStage * 1e3, 80, animationStage * 2e3);
@@ -1043,7 +1063,7 @@ function explosion(){
 				}
 			} else {
 				field[i] = 0;
-				if (explosiveTile & TILE_EARTH){ // Earth: 8 random tiles
+				if (explosiveTile & 1 /* TILE_EARTH */){ // Earth: 8 random tiles
 					for (var j=8; j;){ // WARNING: No guard from infinite loop. If there's no enough tiles on the board, everything will hang
 						var idx = Math.random() * 64 | 0; // Get completely random index
 						if (!destructionStyle[idx] && field[idx]){
@@ -1053,7 +1073,7 @@ function explosion(){
 						};
 					}
 				}
-				if (explosiveTile & TILE_FIRE){ // Fire: 8 nearest tiles
+				if (explosiveTile & 8 /* TILE_FIRE */){ // Fire: 8 nearest tiles
 					for (var j=2;~j--;){ // Not the loop you can see every day. 1..-1
 						for (var k=2;~k--;){
 							var idx = i + j * 8 + k;
@@ -1064,10 +1084,10 @@ function explosion(){
 					}
 				}
 				for (var j=64; j--; ){ // Water / Air: Row / Column
-					if (j >> 3 == i >> 3 && field[j] && explosiveTile & TILE_WATER){
+					if (j >> 3 == i >> 3 && field[j] && explosiveTile & 2 /* TILE_WATER */){
 						destructionStyle[j] = 1;
 					}
-					if (j % 8 == i % 8 && field[j] && explosiveTile & TILE_AIR){
+					if (j % 8 == i % 8 && field[j] && explosiveTile & 4 /* TILE_AIR */){
 						destructionStyle[j] = 2;
 					}
 				}
