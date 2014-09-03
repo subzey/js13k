@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "uglifyjs": "^2.3.6"
+    "uglify-js": "^2.4.15"
   }
 }
