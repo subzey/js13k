@@ -22,37 +22,14 @@ function mainMenu(){
 mainMenu();
 
 // Tiles
-var titles = ['Void'];
+var titles = [, "Earth", "Water", "Mud", "Air", "Sand", "Rain", "Golem", "Fire", "Brimstone", "Alcohol", "Oil", "Phlogiston", "Diamond", "Lightning", "Life", "Quintessence",,,,,,,,,,,,,,,"Harmony"];
+
 
 var TILE_EARTH = parseInt('00001', 2);
 var TILE_WATER = parseInt('00010', 2);
 var TILE_AIR   = parseInt('00100', 2);
 var TILE_FIRE  = parseInt('01000', 2);
 var TILE_QUINTESSENCE = parseInt('10000', 2);
-
-titles[TILE_AIR] = 'Air';
-titles[TILE_FIRE] = 'Fire';
-titles[TILE_EARTH] = 'Earth';
-titles[TILE_WATER] = 'Water';
-
-titles[TILE_AIR + TILE_FIRE] = 'Phlogiston';
-titles[TILE_AIR + TILE_EARTH] = 'Sand';
-titles[TILE_AIR + TILE_WATER] = 'Rain';
-titles[TILE_FIRE + TILE_EARTH] = 'Brimstone';
-titles[TILE_FIRE + TILE_WATER] = 'Alcohol';
-titles[TILE_EARTH + TILE_WATER] = 'Mud';
-
-titles[TILE_AIR + TILE_FIRE + TILE_EARTH] = 'Diamond';
-titles[TILE_AIR + TILE_FIRE + TILE_WATER] = 'Lightning';
-titles[TILE_AIR + TILE_EARTH + TILE_WATER] = 'Golem';
-titles[TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Oil';
-
-titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER] = 'Life';
-
-titles[TILE_QUINTESSENCE] = 'Quintessence';
-
-titles[TILE_AIR + TILE_FIRE + TILE_EARTH + TILE_WATER + TILE_QUINTESSENCE] = 'Harmony';
-
 
 var tiles = []; // Tile images
 var hoveredTiles = []; // Tile images
