@@ -1,0 +1,46 @@
+<body>
+
+<script>
+var sampleLength = 3e4;
+for(var t=0,S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<sampleLength;t++){
+	var v = 0;
+	for (var h = 0; h++ < 8; ){
+		v += Math.sin(t / 15 / h) * Math.cos(h/2);
+	}
+	v *= 7000 * (sampleLength * 2 / (sampleLength + t) - 1);
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var a = document.body.appendChild(document.createElement('audio'));
+a.controls = true;
+a.src = 'data:audio/wav;base64,' + btoa(S);
+
+</script>
+<script>
+var sampleLength = 3e4;
+for(var t=0,S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<sampleLength;t++){
+	var v = 0;
+	for (var h = 0; h++ < 8; ){
+		v += Math.sin(t / 15 / h) * Math.cos(h);
+	}
+	v *= 7000 * (sampleLength * 2 / (sampleLength + t) - 1);
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var a = document.body.appendChild(document.createElement('audio'));
+a.controls = true;
+a.src = 'data:audio/wav;base64,' + btoa(S);
+</script>
+
+<script>
+var sampleLength = 3e4;
+for(var t=0,S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<sampleLength;t++){
+	var v = 0;
+	for (var h = 0; h++ < 8; ){
+		v += Math.sin(t / 60 / h) * Math.sin(h);
+	}
+	v *= 9000 * (sampleLength * 2 / (sampleLength + t) - 1);
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var a = document.body.appendChild(document.createElement('audio'));
+a.controls = true;
+a.src = 'data:audio/wav;base64,' + btoa(S);
+</script>
