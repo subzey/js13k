@@ -523,6 +523,45 @@ c.putImageData(imageData, 0, 0);
 
 a.style.background = 'url(' + a.toDataURL() + ')'; // We don't need to repaint this
 
+// Sound
+var audio = [];
+
+for(var t=0, S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<30000;t++){
+	for (var v=0, h = 9; --h; ){
+		v += Math.sin(t / 15 / h) // Sine wave
+			* Math.cos(h) * h * h // Harmonics
+			* 300 * (60000 / (30000 + t) - 1) // Decay
+		;
+	}
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var sound = document.createElement('audio');
+sound.src = 'data:audio/wav;base64,' + btoa(S);
+audio.push(sound);
+
+// Merge
+for(var t=0, S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<30000;t++){
+	for (var v=0, h = 9; --h; ){
+		v += Math.sin(t / 25 / h) * Math.sin(h/2) * 6000 * (60000 / (30000 + t) - 1);
+	}
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var sound = document.createElement('audio');
+sound.src = 'data:audio/wav;base64,' + btoa(S);
+audio.push(sound);
+
+// Triple
+for(var t=0, S='RIFF_oO_WAVEfmt '+atob('EAAAAAEAAQBErAAAiFgBAAIAEABkYXRh');t<30000;t++){
+	for (var v=0, h = 9; --h; ){
+		v += Math.sin(t / 15 / h) * Math.cos(h) * 7000 * (60000 / (30000 + t) - 1);
+	}
+	S+=String.fromCharCode(v & 255, (v >>> 8 ) & 255);
+}
+var sound = document.createElement('audio');
+sound.src = 'data:audio/wav;base64,' + btoa(S);
+audio.push(sound);
+////
+
 
 function getNewTileIndex(){
 	return [1,2,4,8][Math.random() * 4 | 0];
@@ -766,6 +805,11 @@ function animationMerge(descriptor){
 		c.save();
 		c.fillStyle = '#FFF';
 		if (animationStage < 1){
+			if (!descriptor.soundPlayed){
+				descriptor.soundPlayed = 1;
+				audio[1].play();
+			}
+
 			var animationDistance = Math.cos(animationStage * Math.PI / 2)
 			var dX = (descriptor.affectedTiles[1] % 8) - dstX;
 			var dY = (descriptor.affectedTiles[1] / 8 | 0) - dstY;
@@ -805,6 +849,11 @@ function animationMergeFailed(descriptor){
 	console.log('animationMergeFailed', descriptor.direction, descriptor.sign)
 	var animationStage = (new Date - descriptor.timestamp) / 1000;
 
+	if (!descriptor.soundPlayed){
+		descriptor.soundPlayed = 1;
+		audio[0].play();
+	}
+
 	if (animationStage < 1){
 		var shift = Math.cos(animationStage * 15) * .18 * (1-animationStage);
 		var x = descriptor.affectedTiles[0] % 8 + shift * descriptor.sign * (1 - descriptor.direction);
@@ -816,6 +865,10 @@ function animationMergeFailed(descriptor){
 }
 
 function animationDisappear(descriptor){
+	if (!descriptor.soundPlayed){
+		descriptor.soundPlayed = 1;
+		audio[2].play();
+	}
 	var alpha = 1 - (new Date - descriptor.timestamp) / 300;
 	if (alpha > 0){
 		if (descriptor.q){
