@@ -1,10 +1,11 @@
+<!DOCTYPE html>
 <link id=l>
 <title>Quintessence</title>
 <body bgcolor=#333638>
-<meta name="viewport" content="width=724,height=759">
+<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no">
 <center id=m>
 </center>
-<div style="padding:10px;height:15px">Score <b id=s>0</b></div>
+<div style="padding:10px;height:16px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
 <script>
 function mainMenu(){
@@ -20,6 +21,38 @@ function mainMenu(){
 }
 
 mainMenu();
+
+var scaledSize;
+var scaledTop;
+var scaledLeft;
+
+function resize(){
+	var contentWidth = 724;
+	var contentHeight = 760;
+	var viewportWidth = document.documentElement.clientWidth;
+	var viewportHeight = document.documentElement.clientHeight;
+	scale = Math.min(viewportWidth / contentWidth, viewportHeight / contentHeight);
+	if (scale > 1){
+		// Upscale only by multipliers of two
+		scale = (scale << 1) >> 1;
+	}
+	if (
+		!['transform', '-webkit-transform', '-moz-transform', '-o-transfrom', '-ms-transform'].some(function(k){
+			if (k in document.body.style){
+				return document.body.style[k] = scale ^ 1 ? 'scale(' + scale + ')' : '';
+			}
+		})
+	){
+		scale = 1;
+		// Fall back. CSS tranform is not supported
+	}
+	scaledSize = contentWidth * scale;
+	scaledTop = (viewportHeight - scaledSize + 36 * scale) / 2; // Plus score div
+	scaledLeft = (viewportWidth - scaledSize) / 2;
+}
+
+resize();
+window.onresize = resize;
 
 // Tiles
 var titles = [
@@ -712,9 +745,8 @@ function extractCoords(e){
 	e.preventDefault();
 	e = e.touches ? e.touches[0] : e;
 	var coords = [
-		// It's 2014, and we still have to do it
-		e.pageX - a.offsetLeft, // [0] - Relative X
-		e.pageY - a.offsetTop,  // [1] - Relative Y
+		e.pageX - scaledLeft, // [0] - Relative X
+		e.pageY - scaledTop,  // [1] - Relative Y
 	];
 	coords = coords.concat(coords.map(getTileByCoord)); // [2], [3] - tile X/Y
 	coords[4] = coords[3]*8 + coords[2];
@@ -722,13 +754,13 @@ function extractCoords(e){
 }
 
 function getTileByCoord(coord){
-	coord = (coord - 2) / 90 | 0;
+	coord = (coord * 724 / scaledSize - 2) / 90 | 0;
 	if (coord < 0 || coord > 7) return;
 	return coord;
 }
 
 // UI
-a.ontouchmove = a.onmousemove = function(e){
+document.ontouchmove = document.onmousemove = function(e){
 	var coords = extractCoords(e);
 	// Request repaint only if hovered tile changed
 	// Keep in mind, coords[4] may be `undefined`!
@@ -737,7 +769,7 @@ a.ontouchmove = a.onmousemove = function(e){
 	if (dragStartCoords && !blockingAnimations[0]){
 		var dx = hoveredCoords[0] - dragStartCoords[0];
 		var dy = hoveredCoords[1] - dragStartCoords[1];
-		if (dx*dx + dy*dy > 5000){ // Threshold
+		if (dx*dx + dy*dy > scaledSize * scaledSize / 100){ // Threshold
 			var direction = +(dx/dy * dx/dy < 1); // 0 if x, 1 if y
 			var sign = hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1
 			var newTileCoord = dragStartCoords[2+direction] + sign;
@@ -785,11 +817,11 @@ a.ontouchmove = a.onmousemove = function(e){
 		}
 	}
 }
-a.onmouseout = function(e){ // e argument is unused
+document.onmouseout = function(e){ // e argument is unused
 	hoveredCoords = 0;
 	invalidate();
 }
-a.ontouchstart = a.onmousedown = function(e){
+document.ontouchstart = document.onmousedown = function(e){
 	console.log(e);
 	if (!uiLocked){
 		var coords = extractCoords(e);
@@ -797,7 +829,7 @@ a.ontouchstart = a.onmousedown = function(e){
 		dragStartCoords = field[coords[4]] && coords; // Do not start drag of empty tile
 	}
 }
-a.ontouchend = a.onmouseup = function(e){  // e argument is unused
+document.ontouchend = document.onmouseup = function(e){  // e argument is unused
 	dragStartCoords = 0;
 	invalidate();
 }
@@ -1310,8 +1342,11 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 // start();
 </script>
 <style>
-body{width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF;cursor:default}
+html,body {overflow: hidden}
+body{width:724px;margin:auto;font:16px/20px sans-serif;color:#FFF;cursor:default;
+position:absolute;top:50%;left:50%;margin:-380px -362px}
 #m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
+#a{display:block}
 a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
 a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
 a[onclick]:hover{background:#fff;color:#000}
