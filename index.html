@@ -673,12 +673,21 @@ function startDemo(){
 			'newTiles': {61:1,53:2}
 		},
 		{
+			'newTiles': {}
+		},
+		{
 			'text': 'Create five tiles in a row and get something special.',
 			'newTiles': {58:12,59:12,60:4,61:12,62:12,52:8}
 		},
 		{
+			'newTiles': {}
+		},
+		{
 			'text': 'This is a Quintessence, the fifth element.<br>Merge it with other tile and see what happens.',
 			'newTiles': {59:15,60:4}
+		},
+		{
+			'newTiles': {}
 		}
 	];
 	recalcState = [];
@@ -1027,6 +1036,7 @@ function sweep(){
 
 		// Main tile cannot be equal 0. Supposedly.
 		addScore(cascade * 100 * 1 << (triple.length - 2), animation.q || triple[1]);
+		shiftScenario = 1;
 	}
 
 	if (!triples.length){
@@ -1152,6 +1162,7 @@ function explosion(){
 			}
 
 			addScore(getTileGeneration(explosiveTile) * 100, i);
+			shiftScenario = 1;
 		}
 	}
 }
