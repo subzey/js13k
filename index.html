@@ -3,10 +3,11 @@
 <title>Quintessence</title>
 <body bgcolor=#333638>
 <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no">
-<center id=m>
-</center>
+<div id=w>
+<center id=m></center>
 <div style="padding:10px;height:16px">Score <b id=s>0</b></div>
 <canvas id="a"></canvas>
+</div>
 <script>
 function mainMenu(){
 	m.style.display = 'block';
@@ -38,8 +39,8 @@ function resize(){
 	}
 	if (
 		!['transform', '-webkit-transform', '-moz-transform', '-o-transfrom', '-ms-transform'].some(function(k){
-			if (k in document.body.style){
-				return document.body.style[k] = scale ^ 1 ? 'scale(' + scale + ')' : '';
+			if (k in w.style){
+				return w.style[k] = scale ^ 1 ? 'scale(' + scale + ')' : '';
 			}
 		})
 	){
@@ -754,9 +755,9 @@ function extractCoords(e){
 }
 
 function getTileByCoord(coord){
-	coord = (coord * 724 / scaledSize - 2) / 90 | 0;
-	if (coord < 0 || coord > 7) return;
-	return coord;
+	coord = (coord * 724 / scaledSize - 2) / 90;
+	if (coord < 0 || coord >= 8) return;
+	return coord | 0;
 }
 
 // UI
@@ -1342,8 +1343,8 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 // start();
 </script>
 <style>
-html,body {overflow: hidden}
-body{width:724px;height:760px;font:16px/20px sans-serif;color:#FFF;cursor:default;position:absolute;top:50%;left:50%;margin:-380px -362px}
+html,body {overflow: hidden;width:100%;height:100%;font:16px/20px sans-serif;color:#FFF;cursor:default}
+#w{width:724px;height:760px;position:absolute;top:50%;left:50%;margin:-380px -362px}
 #m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
 #a{display:block}
 a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
