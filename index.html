@@ -565,7 +565,17 @@ audio.push(sound);
 
 
 function getNewTileIndex(){
-	return [1,2,4,8][Math.random() * 4 | 0];
+	// We have two tile generation algos
+	// Until player gets a 100K score only basic elements appears
+	// When player gets 1M score probability of all elements are equal
+	// Between these scores probability gradually increases
+	if (Math.random() > (score - 100000) / 900000){
+		// Only basic elements
+		return [1,2,4,8][Math.random() * 4 | 0];
+	} else {
+		// All non-q elements except life, 1..14
+		return 1 + Math.random() * 14 | 0;
+	}
 }
 
 var blockingAnimations = []; // Anything, just to ensure field filling loop works for the first time
