@@ -2,11 +2,23 @@
 <link id=l>
 <meta charset=utf-8>
 <title>Quintessence</title>
+<style>
+html,body{-ms-touch-action:none;overflow: hidden;width:100%;height:100%;margin:0;font:16px/20px sans-serif;color:#FFF;cursor:default}
+#w{width:724px;height:760px;position:absolute;top:0;left:50%;margin:0 -362px}
+#m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
+#a{display:block}
+#s{padding:10px;height:16px}
+a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
+a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
+a[onclick]:hover{background:#fff;color:#000}
+:link{color:#55acee;border-color:#55acee;text-decoration:none}
+:link:hover{background:#55acee;color:#fff}
+</style>
 <body bgcolor=#333638>
 <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no">
 <div id=w>
 <center id=m></center>
-<div id="t"></div>
+<div id="s"></div>
 <canvas id="a"></canvas>
 </div>
 <script>
@@ -152,8 +164,6 @@ function mainMenu(){
 }
 
 mainMenu();
-
-t.innerHTML = getLocalized('s') + ' <b id=s>0</b>'
 
 var scaledSize;
 var scaledTop;
@@ -746,7 +756,7 @@ function getTileGeneration(tile){
 function addScore(increment, idx){
 	if (!demoScenario){
 		score += increment;
-		s.innerHTML = score;
+		s.innerHTML = getLocalized('s') + ' <b>' + score;
 		nonblockingAnimations.push({
 			'fn': animationScore,
 			'affectedTiles': [],
@@ -780,6 +790,8 @@ function start(){ // or restart
 		// Fast forward sweep/gravity
 		sweep();
 	} while (blockingAnimations.length);
+	score = 0;
+	s.innerHTML = getLocalized('s') + ' <b>' + score;;
 	gameover = 0;
 	demoScenario = 0;
 	uiLocked = 0;
@@ -803,8 +815,9 @@ function load(){
 	try {
 		var saved = JSON.parse(localStorage['Quintessence.save']);
 		field = saved.f.map(Number); // Make sure it's an array of numbers
-		s.innerHTML = score = +saved.s; // Restore score
+		score = +saved.s; // Restore score
 		gameover = 0; // Clear game over flag. It will be set on nxt invalidation if needed.
+		s.innerHTML = getLocalized('s') + ' <b>' + score;
 		m.style.display = 'none'; // Hide message
 		demoScenario = 0;
 		recalcState = []; // Init recalc
@@ -860,6 +873,7 @@ function startDemo(){
 	];
 	recalcState = [];
 	gameover = 0;
+	s.innerHTML = '';
 	invalidate();
 }
 
@@ -1480,14 +1494,3 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 
 // start();
 </script>
-<style>
-html,body{-ms-touch-action:none;overflow: hidden;width:100%;height:100%;margin:0;font:16px/20px sans-serif;color:#FFF;cursor:default}
-#w{width:724px;height:760px;position:absolute;top:0;left:50%;margin:0 -362px}
-#m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
-#a{display:block}
-#t{padding:10px;height:16px}
-a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
-a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
-a[onclick]:hover{background:#fff;color:#000}
-:link{color:#55acee;border-color:#55acee;text-decoration:none}
-:link:hover{background:#55acee;color:#fff}
