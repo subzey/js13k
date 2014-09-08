@@ -22,7 +22,7 @@ a[onclick]:hover{background:#fff;color:#000}
 <canvas id="a"></canvas>
 </div>
 <script>
-var lang = ((/[?&]lang=(.*)/.exec(location.search)||0)[1] || navigator.userLanguage || navigator.browserLanguage || navigator.language).replace(/^([a-z]+).*/, '$1').toLowerCase();
+var lang = ((/[?&]lang=(.*)/.exec(location.search)||0)[1] || navigator.userLanguage || navigator.browserLanguage || navigator.language || '').replace(/^([a-z]+).*/, '$1').toLowerCase();
 var translations = {
 	'en': {
 		bs: 'Start',
