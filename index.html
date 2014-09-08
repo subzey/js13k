@@ -6,12 +6,11 @@
 <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no">
 <div id=w>
 <center id=m></center>
-<div style="padding:10px;height:16px">Score <b id=s>0</b></div>
+<div id="t"></div>
 <canvas id="a"></canvas>
 </div>
 <script>
-var lang = (navigator.userLanguage || navigator.browserLanguage || navigator.language).replace(/^([a-z]+).*/, '$1').toLowerCase();
-lang = 'ru';
+var lang = ((/[?&]lang=(.*)/.exec(location.search)||0)[1] || navigator.userLanguage || navigator.browserLanguage || navigator.language).replace(/^([a-z]+).*/, '$1').toLowerCase();
 var translations = {
 	'en': {
 		bs: 'Start',
@@ -52,7 +51,50 @@ var translations = {
 			'Three identical tiles in a row disappears.',
 			'Create five tiles in a row and get something special.',
 			'This is a Quintessence, the fifth element.<br>Merge it with other tile and see what happens.'
-		]
+		],
+		s: 'Score'
+	},
+	'fr': {
+		bs: 'Start', // Not translated
+		bc: 'Continue',  // Not translated
+		bh: 'How to play',  // Not translated
+		br: 'Recommencer',
+		bt: 'Tweeter mon score',
+
+		gm: 'Terminé',
+		gs: 'Votre score final est',
+
+		tw: "J'ai fait un score de %s à Quintessence, un jeu %23js13k.",
+
+		t: [
+			,               // Binary 00000
+			"Terre",        // Binary 00001
+			"Eau",        // Binary 00010
+			"Boue",          // Binary 00011
+			"Air",          // Binary 00100
+			"Sable",         // Binary 00101
+			"Pluie",         // Binary 00110
+			"Golem",        // Binary 00111
+			"Feu",         // Binary 01000
+			"Soufre",    // Binary 01001
+			"Alcool",      // Binary 01010
+			"Huile",          // Binary 01011
+			"Phlogiston",   // Binary 01100
+			"Diamant",      // Binary 01101
+			"Eclair",    // Binary 01110
+			"Vie",         // Binary 01111
+			"Quintessence", // Binary 10000
+			,,,,,,,,,,,,,,  // Bunch of explosive elements that has no title
+			"Harmonie"       // Binary 11111
+		],
+		d: [
+			'Ce jeu consiste à mélanger des éléments.<br/>Déplacez une de ces deux cases avec la souris (ou le doigt sur un écran tactile) pour les malanger à une autre case.',
+			"Parfait! Vous avez compris l'idée. Maintenant, réessayez.<br/>Notez que quelques cases ne peuvent pas être mélangées, car une case ne peut pas contenir plus d'in exemplaire de chaque élément de base.",
+			'Trois cases identiques alignées disparaissent.',
+			'Alignez cinq cases identiques pour créer quelque chose de spécial.',
+			"Ceci est une Quintessence, le cinquième élément.<br>Mélangez-le avec d'autres cases pour voir ce qui se passe."
+		],
+		s: 'Score' // Not translated
 	},
 	'ru': {
 		bs: 'Начать игру',
@@ -64,7 +106,7 @@ var translations = {
 		gm: 'Игра окончена',
 		gs: 'Вы набрали',
 
-		tw: 'Я набрал %s очков в Quintessence, игре с конкурса %23js13k.',
+		tw: 'Я набрал %s очков в Quintessence, игре %23js13k.',
 
 		t: [
 			,               // Binary 00000
@@ -89,11 +131,12 @@ var translations = {
 		],
 		d: [
 			'В этой игре нужно объединять элементы.<br/>Потяние любую из этих плиток мышкой (или пальцем, если у Вас тачевое устройство) чтобы объединить их в новую плитку.',
-			'Безупречно! Ну, Вы поняли, что надо делать. А теперь попробуйте ещё раз.<br/>Заметьте, некоторые плитки объединить не получится — в плитке может находиться базовых элементов не более, чем каждого по одному.',
+			'Безупречно! Вы схватываете на лету. А теперь попробуйте ещё раз.<br/>Заметьте, некоторые плитки объединить не получится — в плитке может находиться базовых элементов не более, чем каждого по одному.',
 			'Три одинаковых плитки в ряд исчезают.',
 			'Соберите пять плиток в ряд, и получите кое-что особенное.',
 			'Это Квинтэссенция, пятый элемент.<br>Объедините её с лобой другой плиткой, и посмотрим, что из этого выйдет.'
-		]
+		],
+		s: 'Очки'
 	}
 }
 
@@ -109,6 +152,8 @@ function mainMenu(){
 }
 
 mainMenu();
+
+t.innerHTML = getLocalized('s') + ' <b id=s>0</b>'
 
 var scaledSize;
 var scaledTop;
@@ -1440,6 +1485,7 @@ html,body{-ms-touch-action:none;overflow: hidden;width:100%;height:100%;margin:0
 #w{width:724px;height:760px;position:absolute;top:0;left:50%;margin:0 -362px}
 #m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
 #a{display:block}
+#t{padding:10px;height:16px}
 a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
 a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
 a[onclick]:hover{background:#fff;color:#000}
