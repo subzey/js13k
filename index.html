@@ -9,16 +9,102 @@
 <canvas id="a"></canvas>
 </div>
 <script>
+var lang = (navigator.userLanguage || navigator.browserLanguage || navigator.language).replace(/^([a-z]+).*/, '$1').toLowerCase();
+var translations = {
+	'en': {
+		bs: 'Start',
+		bc: 'Continue',
+		bh: 'How to play',
+		br: 'Start over',
+		bt: 'Tweet my score',
+
+		gm: 'Game Over',
+		gs: 'Your final score is',
+
+		tw: 'I scored %s in Quintessence, a %23js13k game.',
+
+		t: [
+			,               // Binary 00000
+			"Earth",        // Binary 00001
+			"Water",        // Binary 00010
+			"Mud",          // Binary 00011
+			"Air",          // Binary 00100
+			"Sand",         // Binary 00101
+			"Rain",         // Binary 00110
+			"Golem",        // Binary 00111
+			"Fire",         // Binary 01000
+			"Brimstone",    // Binary 01001
+			"Alcohol",      // Binary 01010
+			"Oil",          // Binary 01011
+			"Phlogiston",   // Binary 01100
+			"Diamond",      // Binary 01101
+			"Lightning",    // Binary 01110
+			"Life",         // Binary 01111
+			"Quintessence", // Binary 10000
+			,,,,,,,,,,,,,,  // Bunch of explosive elements that has no title
+			"Harmony"       // Binary 11111
+		],
+		d: [
+			'This game is all about merging elements.<br/>Drag any of these two tiles with mouse (or finger on touch device) to merge into a new tile.',
+			'Perfect! You got the idea. Now try once again.<br/>Notice that some tiles cannot be merged, as tile cannot contain more than one of each basic element.',
+			'Three identical tiles in a row disappears.',
+			'Create five tiles in a row and get something special.',
+			'This is a Quintessence, the fifth element.<br>Merge it with other tile and see what happens.'
+		]
+	},
+	'ru': {
+		bs: 'Начать игру',
+		bc: 'Продожить',
+		bh: 'Как играть',
+		br: 'Начать сначала',
+		bt: 'Поделиться в твиттере',
+
+		gm: 'Игра окончена',
+		gs: 'Вы набрали',
+
+		tw: 'Я набрал %s очков в Quintessence, игре с конкурса %23js13k.',
+
+		t: [
+			,               // Binary 00000
+			"Земля",        // Binary 00001
+			"Вода",        // Binary 00010
+			"Грязь",          // Binary 00011
+			"Воздух",          // Binary 00100
+			"Песок",         // Binary 00101
+			"Дождь",         // Binary 00110
+			"Голем",        // Binary 00111
+			"Огонь",         // Binary 01000
+			"Сера",    // Binary 01001
+			"Алкоголь",      // Binary 01010
+			"Масло",          // Binary 01011
+			"Флогистон",   // Binary 01100
+			"Бриллиант",      // Binary 01101
+			"Молния",    // Binary 01110
+			"Жизнь",         // Binary 01111
+			"Квинтэссенция", // Binary 10000
+			,,,,,,,,,,,,,,  // Bunch of explosive elements that has no title
+			"Гармония"       // Binary 11111
+		],
+		d: [
+			'В этой игре нужно объединять элементы.<br/>Потяние любую из этих плиток мышкой (или пальцем, если у Вас тачевое устройство) чтобы объединить их в новую плитку.',
+			'Безупречно! Ну, Вы поняли, что надо делать. А теперь попробуйте ещё раз.<br/>Заметьте, некоторые плитки объединить не получится — в плитке может находиться базовых элементов не более, чем каждого по одному.',
+			'Три одинаковых плитки в ряд исчезают.',
+			'Соберите пять плиток в ряд, и получите кое-что особенное.',
+			'Это Квинтэссенция, пятый элемент.<br>Объедините её с лобой другой плиткой, и посмотрим, что из этого выйдет.'
+		]
+	}
+	}
+}
+
+function getLocalized(propname){
+	return (translations[lang] || 0)[propname] || translations.en[propname];
+}
+
 function mainMenu(){
 	m.style.display = 'block';
-	m.innerHTML = '<h1>Quintessence</h1><br><a onclick=start()>Start';
-	// Add continue button
-	if ((self.localStorage||{})['Quintessence.save']){
-		m.innerHTML += '<a onclick=load()>Continue';
-	} else {
-		m.innerHTML += '<a>Continue';
-	}
-	m.innerHTML += '<a onclick=startDemo()>How to play'
+	m.innerHTML = '<h1>Quintessence</h1><br><a onclick=start()>' + getLocalized('bs') +
+	((self.localStorage||{})['Quintessence.save'] ? '<a onclick=load()>' : '<a>') + getLocalized('bc') +
+	'<a onclick=startDemo()>' + getLocalized('bh')
 }
 
 mainMenu();
@@ -55,30 +141,6 @@ function resize(){
 
 resize();
 window.onresize = resize;
-
-// Tiles
-var titles = [
-	,               // Binary 00000
-	"Earth",        // Binary 00001
-	"Water",        // Binary 00010
-	"Mud",          // Binary 00011
-	"Air",          // Binary 00100
-	"Sand",         // Binary 00101
-	"Rain",         // Binary 00110
-	"Golem",        // Binary 00111
-	"Fire",         // Binary 01000
-	"Brimstone",    // Binary 01001
-	"Alcohol",      // Binary 01010
-	"Oil",          // Binary 01011
-	"Phlogiston",   // Binary 01100
-	"Diamond",      // Binary 01101
-	"Lightning",    // Binary 01110
-	"Life",         // Binary 01111
-	"Quintessence", // Binary 10000
-	,,,,,,,,,,,,,,  // Bunch of explosive elements that has no title
-	"Harmony"       // Binary 11111
-];
-
 
 // var TILE_EARTH = parseInt('00001', 2);
 // var TILE_WATER = parseInt('00010', 2);
@@ -124,7 +186,7 @@ for (var code=64; code--; ){
 			c.globalAlpha = drawPosition ^ 1 ? 0.3 : activityState || .7;
 
 			c.textAlign = 'center';
-			c.fillText([titles[code]], 40, 70);
+			c.fillText([getLocalized('t')[code]], 40, 70);
 
 			if (activityState && drawPosition == 1){
 				c.strokeStyle = '#CCC';
@@ -721,29 +783,29 @@ function save(){
 function startDemo(){
 	demoScenario = [
 		{
-			'text': "This game is all about merging elements.<br/>Drag any of these two tiles with mouse (or finger on touch device) to merge into a new tile.",
+			'text': getLocalized('d')[0],
 			'newTiles': {59:1,51:2}
 		},
 		{
-			'text': "Perfect! You got the idea. Now try once again.<br/>Notice that some tiles cannot be merged, as tile cannot contain more than one of each basic element.",
+			'text': getLocalized('d')[1],
 			'newTiles': {60:2,52:1}
 		},
 		{
-			'text': "Three identical tiles in a row disappears.",
+			'text': getLocalized('d')[2],
 			'newTiles': {61:1,53:2}
 		},
 		{
 			'newTiles': {}
 		},
 		{
-			'text': 'Create five tiles in a row and get something special.',
+			'text': getLocalized('d')[3],
 			'newTiles': {58:12,59:12,60:4,61:12,62:12,52:8}
 		},
 		{
 			'newTiles': {}
 		},
 		{
-			'text': 'This is a Quintessence, the fifth element.<br>Merge it with other tile and see what happens.',
+			'text': getLocalized('d')[4],
 			'newTiles': {59:15,60:4}
 		},
 		{
@@ -1350,7 +1412,10 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 			uiLocked = 0;
 			if (!movesLeft().length){
 				// "Game over man, the end"
-				m.innerHTML = '<h1>Game Over</h1><p>Your final score is<h3>' + score + '</h3><a target=_blank href="//twitter.com/intent/tweet?text=I scored '+ score +' in Quintessence, a %23js13k game.&url=' + location + '&hashtags=QuintessenceGame">Tweet my score<a onclick=start()>Start over';
+				m.innerHTML = '<h1>' + getLocalized('gm') + '</h1><p>' + getLocalized('gs') + '<h3>' + score +
+				'</h3><a target=_blank href="//twitter.com/intent/tweet?text=">' + getLocalized('tw').replace(/%s/g, score) + 
+				'&url=' + location + '&hashtags=QuintessenceGame">' + getLocalized('bt') +
+				'<a onclick=start()>' + getLocalized('br');
 				m.style.display = 'block';
 				delete (self.localStorage||{})['Quintessence.save'];
 				gameover = 1;
