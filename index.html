@@ -1363,11 +1363,11 @@ function movesLeft(){
 	for (var i=8; i--; ){
 		for (var j=7; j--; ){
 			var idx = i * 8 + j;
-			if (!(field[idx] & field[idx + 1])){
+			if (!(field[idx] & field[idx + 1]) && field[idx] * field[idx + 1]){
 				moves.push([idx, 0]);
 			}
 			var idx = j * 8 + i;
-			if (!(field[idx] & field[idx + 8])){
+			if (!(field[idx] & field[idx + 8]) && field[idx] * field[idx + 8]){
 				moves.push([idx, 1]);
 			}
 		}
@@ -1459,9 +1459,6 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 					m.innerHTML = demoScenario[0].text;
 					delete demoScenario[0].text;
 				}
-			} else {
-				uiLocked = 1;
-				setTimeout(mainMenu, 1000);
 			}
 		}
 		uiLocked = 1;
@@ -1471,13 +1468,17 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 			recalcState = 0; // something falsy
 			uiLocked = 0;
 			if (!movesLeft().length){
-				// "Game over man, the end"
-				m.innerHTML = '<h1>' + getLocalized('gm') + '</h1><p>' + getLocalized('gs') + '<h3>' + score +
-				'</h3><a target=_blank href="//twitter.com/intent/tweet?text=">' + getLocalized('tw').replace(/%s/g, score) + 
-				'&url=' + location + '&hashtags=QuintessenceGame">' + getLocalized('bt') +
-				'<a onclick=start()>' + getLocalized('br');
-				m.style.display = 'block';
-				delete (self.localStorage||{})['Quintessence.save'];
+				if (demoScenario){
+					mainMenu();
+				} else {
+					// "Game over man, the end"
+					m.innerHTML = '<h1>' + getLocalized('gm') + '</h1><p>' + getLocalized('gs') + '<h3>' + score +
+					'</h3><a target=_blank href="//twitter.com/intent/tweet?text=">' + getLocalized('tw').replace(/%s/g, score) + 
+					'&url=' + location + '&hashtags=QuintessenceGame">' + getLocalized('bt') +
+					'<a onclick=start()>' + getLocalized('br');
+					m.style.display = 'block';
+					delete (self.localStorage||{})['Quintessence.save'];
+				}
 				gameover = 1;
 				uiLocked = 1;
 			}
