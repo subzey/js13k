@@ -4,11 +4,51 @@
 	a.width=400;
 	a.height=400;
 	c.translate(200, 200);
-	c.beginPath();
-	c.moveTo(-100, 0)
-	c.lineTo(100, 0);
-	c.moveTo(0, -100)
-	c.lineTo(0, 100);
-	c.stroke();
 	c.strokeRect(-40, -40, 80, 80);
+
+	c.strokeStyle = '#000';
+	c.fillStyle = '#fff';
+
+	c.beginPath();
+	c.moveTo(-4, 30);
+	c.bezierCurveTo(
+		-4, 24,
+		-14, 4,
+		-24, 4
+	);
+	c.bezierCurveTo(
+		-19, -6,
+		-5, 9,
+		-5, 9
+	);
+	c.lineTo(-4, -25);
+	c.bezierCurveTo(
+		-4, -30,
+		3, -30,
+		3, -25
+	);
+	c.lineTo(3, -2)
+	c.bezierCurveTo(
+		3, -6,
+		11, -5,
+		11, -1
+	);
+	c.lineTo(11, -1)
+	c.bezierCurveTo(
+		11, -5,
+		19, -4,
+		19, 0
+	);
+	c.bezierCurveTo(
+		22, -5,
+		25, -1,
+		24, 10
+	);
+	c.bezierCurveTo(
+		24, 20,
+		18, 22,
+		18, 30
+	);
+	c.fill();
+	c.stroke();
 </script>
