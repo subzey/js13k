@@ -6,6 +6,7 @@ var keep = ['start', 'startDemo', 'load'];
 var mangledNames = {};
 
 var html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
+html = html.replace(/\r\n/g, '\n');
 html = html.replace(/(<script[^>]*>)([^]*?)(<\/script>)/g, function(_, openTag, content, closeTag){
 	var uglifyjs;
 	try {
