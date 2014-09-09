@@ -914,6 +914,8 @@ function getTileByCoord(coord){
 }
 
 // UI
+var wrongMoves = 0;
+
 document.ontouchmove = document.onmousemove = function(e){
 	var coords = extractCoords(e);
 	// Request repaint only if hovered tile changed
@@ -923,6 +925,14 @@ document.ontouchmove = document.onmousemove = function(e){
 	if (dragStartCoords && !blockingAnimations[0]){
 		var dx = hoveredCoords[0] - dragStartCoords[0];
 		var dy = hoveredCoords[1] - dragStartCoords[1];
+
+		var hintAnimation;
+		for (var i=nonblockingAnimations.length; i--; ){
+			if (nonblockingAnimations[i].fn == animationHint){
+				hintAnimation = nonblockingAnimations[i];
+			}
+		}
+
 		if (dx*dx + dy*dy > scaledSize * scaledSize / 100){ // Threshold
 			var direction = +(dx/dy * dx/dy < 1); // 0 if x, 1 if y
 			var sign = hoveredCoords[direction] - dragStartCoords[direction] > 0 ? 1 : -1
@@ -945,7 +955,21 @@ document.ontouchmove = document.onmousemove = function(e){
 					'direction': direction,
 					'sign': sign
 				});
+				if (++wrongMoves > 2 && !hintAnimation){
+					// Pick random move
+					var moves = movesLeft();
+					nonblockingAnimations.push({
+						'fn': animationHint,
+						'affectedTiles': moves[Math.random() * moves.length | 0] || [],
+						'timestamp': +new Date,
+						'backwards': (Math.random() < .5)
+					});
+				}
 			} else {
+				wrongMoves = 0;
+				if (hintAnimation){
+					hintAnimation.halt = 1;
+				}
 				blockingAnimations = [{
 					'fn': animationMerge, // Type of animation
 					'affectedTiles': [idx, dragStartCoords[4]], // Tiles that are affected (always an array). To, from
@@ -1187,6 +1211,106 @@ function animationScore(descriptor){
 	}
 }
 
+function animationHint(descriptor){
+	console.log('Hint', descriptor);
+	if (!descriptor.halt){
+		var animationStage = (new Date - descriptor.timestamp) / 500;
+		if (animationStage < 2){
+			var x0 = descriptor.affectedTiles[0] % 8;
+			var y0 = descriptor.affectedTiles[0] >> 3;
+
+			var x1 = descriptor.affectedTiles[1] % 8;
+			var y1 = descriptor.affectedTiles[1] >> 3;
+
+			c.save();
+			c.drawImage(hoveredTiles[field[descriptor.affectedTiles[0]]], x0 * 90 + 7, y0 * 90 + 7);
+			c.drawImage(hoveredTiles[field[descriptor.affectedTiles[1]]], x1 * 90 + 7, y1 * 90 + 7);
+
+
+			if (animationStage < .5){
+				c.globalAlpha = animationStage * 2;
+			}
+			if (animationStage > 1.5){
+				c.globalAlpha = (2 - animationStage) * 2;
+			}
+
+			c.strokeStyle = '#fff';
+			c.lineWidth = 2;
+
+			if (descriptor.affectedTiles[1] - descriptor.affectedTiles[0] > 1){
+				c.strokeRect(x0 * 90 + 2, y0 * 90 + 2, 90, 180);
+			} else {
+				c.strokeRect(x0 * 90 + 2, y0 * 90 + 2, 180, 90);
+			}
+
+
+			var handPosition = 1 - Math.cos(Math.max(animationStage - .5, 0) * 2);
+
+			if (descriptor.backwards){
+				c.translate(
+					(x0 + (x1 - x0) * handPosition) * 90 + 47,
+					(y0 + (y1 - y0) * handPosition) * 90 + 77
+				);
+			} else {
+				c.translate(
+					(x1 + (x0 - x1) * handPosition) * 90 + 47,
+					(y1 + (y0 - y1) * handPosition) * 90 + 77
+				);
+			}
+
+			c.lineJoin = 'round';
+			c.strokeStyle = '#000';
+			c.fillStyle = '#fff';
+
+			c.beginPath();
+			c.moveTo(-4, 30);
+			c.bezierCurveTo(
+				-4, 24,
+				-14, 4,
+				-24, 4
+			);
+			c.bezierCurveTo(
+				-19, -6,
+				-5, 9,
+				-5, 9
+			);
+			c.lineTo(-4, -25);
+			c.bezierCurveTo(
+				-4, -30,
+				3, -30,
+				3, -25
+			);
+			c.lineTo(3, -2)
+			c.bezierCurveTo(
+				3, -6,
+				11, -5,
+				11, -1
+			);
+			c.lineTo(11, -1)
+			c.bezierCurveTo(
+				11, -5,
+				19, -4,
+				19, 0
+			);
+			c.bezierCurveTo(
+				22, -5,
+				25, -1,
+				24, 10
+			);
+			c.bezierCurveTo(
+				24, 20,
+				18, 22,
+				18, 30
+			);
+			c.fill();
+			c.stroke();
+
+			c.restore();
+			return 1;
+		}
+	};
+}
+
 function sweep(){
 	cascade++;
 	console.log('sweep, x' + cascade);
@@ -1383,11 +1507,11 @@ function movesLeft(){
 		for (var j=7; j--; ){
 			var idx = i * 8 + j;
 			if (!(field[idx] & field[idx + 1]) && field[idx] * field[idx + 1]){
-				moves.push([idx, 0]);
+				moves.push([idx, idx + 1]);
 			}
 			var idx = j * 8 + i;
 			if (!(field[idx] & field[idx + 8]) && field[idx] * field[idx + 8]){
-				moves.push([idx, 1]);
+				moves.push([idx, idx + 8]);
 			}
 		}
 	}
