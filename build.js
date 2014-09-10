@@ -2,7 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var keep = ['start', 'startDemo', 'load', 'credits'];
+var keep = ['start', 'startDemo', 'load', 'credits', 'mainMenu'];
 var mangledNames = {};
 
 var html = fs.readFileSync(path.join(__dirname, 'source.html'), 'utf-8');
