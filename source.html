@@ -8,16 +8,18 @@ html,body{-ms-touch-action:none;overflow: hidden;width:100%;height:100%;margin:0
 #m{position:absolute;width:660px;top:99px;margin:12px;background:rgba(0,0,0,.7);padding:20px;border-radius:4px}
 #a{display:block}
 #s{padding:10px;height:16px}
-a{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
-a[onclick]{cursor:pointer;color:#fff;border-color:#fff}
-a[onclick]:hover{background:#fff;color:#000}
-:link{color:#55acee;border-color:#55acee;text-decoration:none}
-:link:hover{background:#55acee;color:#fff}
+.b{display:block;border:solid 1px;color:#aaa;padding:10px;width:150px;margin:9px}
+.b[onclick]{cursor:pointer;color:#fff;border-color:#fff}
+.b[onclick]:hover{background:#fff;color:#000}
+.b:link{color:#55acee;border-color:#55acee;text-decoration:none}
+.b:link:hover{background:#55acee;color:#fff}
+a{color:#fff}
+h3{margin:0}
 </style>
 <body bgcolor=#333638>
 <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no">
 <div id=w>
-<center id=m></center>
+<center id=m>Loading...</center>
 <div id="s"></div>
 <canvas id="a"></canvas>
 </div>
@@ -30,6 +32,8 @@ var translations = {
 		bh: 'How to play',
 		br: 'Start over',
 		bt: 'Tweet my score',
+		ba: 'Credits',
+		bb: 'Back',
 
 		gm: 'Game Over',
 		gs: 'Your final score is',
@@ -72,6 +76,8 @@ var translations = {
 		bh: 'Comment jouer',
 		br: 'Recommencer',
 		bt: 'Tweeter mon score',
+		ba: 'Credits', // Not translated
+		bb: 'Reculer', // Translated with google - maybe incorrect
 
 		gm: 'Terminé',
 		gs: 'Votre score final est',
@@ -114,6 +120,8 @@ var translations = {
 		bh: 'Как играть',
 		br: 'Начать сначала',
 		bt: 'Поделиться в твиттере',
+		ba: 'Об авторах',
+		bb: 'Назад',
 
 		gm: 'Игра окончена',
 		gs: 'Вы набрали',
@@ -158,9 +166,14 @@ function getLocalized(propname){
 
 function mainMenu(){
 	m.style.display = 'block';
-	m.innerHTML = '<h1>Quintessence</h1><br><a onclick=start()>' + getLocalized('bs') +
-	((self.localStorage||{})['Quintessence.save'] ? '<a onclick=load()>' : '<a>') + getLocalized('bc') +
-	'<a onclick=startDemo()>' + getLocalized('bh')
+	m.innerHTML = '<h1>Quintessence</h1><br><a class=b onclick=start()>' + getLocalized('bs') +
+	((self.localStorage||{})['Quintessence.save'] ? '<a class=b onclick=load()>' : '<a class=b>') + getLocalized('bc') +
+	'<a class=b onclick=startDemo()>' + getLocalized('bh') +
+	'<a class=b onclick=credits()>' + getLocalized('ba');
+}
+
+function credits(){
+	m.innerHTML = '<h2>Quintessence is brought to you by</h2><h3>Maxime Euzière</h3><small>Github: <a target="_blank" href="http://github.com/xem">@xem</a>, Twitter: <a target="_blank" href="http://twitter.com/MaximeEuziere">@MaximeEuziere</a></small><p>Code, Translation<h3>Anton Khlynovskiy</h3><small>Github: <a target="_blank" href="http://github.com/subzey">@subzey</a>, Twitter: <a target="_blank" href="http://twitter.com/subzey">@subzey</a></small><p>Idea, Code, Sfx, Gfx, Translation<h2>Thanks to</h2><p>Jim Herrero <i>for assistance in brainstorming.</i><p>A. Povajniy, N. Podgrushiy, S. Kovalyov <i>for being passinate beta testers and giving valuable advices.</i></p><a class=b onclick=mainMenu()>' + getLocalized('bb');
 }
 
 mainMenu();
@@ -1617,9 +1630,9 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 				} else {
 					// "Game over man, the end"
 					m.innerHTML = '<h1>' + getLocalized('gm') + '</h1><p>' + getLocalized('gs') + '<h3>' + score +
-					'</h3><a target=_blank href="//twitter.com/intent/tweet?text=' + getLocalized('tw').replace(/%s/g, score) + 
+					'</h3><a class=b target=_blank href="http://twitter.com/intent/tweet?text=' + getLocalized('tw').replace(/%s/g, score) + 
 					'&url=' + location + '&hashtags=QuintessenceGame">' + getLocalized('bt') +
-					'<a onclick=start()>' + getLocalized('br');
+					'<a class=b onclick=start()>' + getLocalized('br');
 					m.style.display = 'block';
 					delete (self.localStorage||{})['Quintessence.save'];
 				}
