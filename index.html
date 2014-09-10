@@ -1616,7 +1616,7 @@ These actions are in the loop that finishes if neither gravity, nor sweep made n
 				} else {
 					// "Game over man, the end"
 					m.innerHTML = '<h1>' + getLocalized('gm') + '</h1><p>' + getLocalized('gs') + '<h3>' + score +
-					'</h3><a target=_blank href="//twitter.com/intent/tweet?text=">' + getLocalized('tw').replace(/%s/g, score) + 
+					'</h3><a target=_blank href="//twitter.com/intent/tweet?text=' + getLocalized('tw').replace(/%s/g, score) + 
 					'&url=' + location + '&hashtags=QuintessenceGame">' + getLocalized('bt') +
 					'<a onclick=start()>' + getLocalized('br');
 					m.style.display = 'block';
