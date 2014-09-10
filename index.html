@@ -1344,10 +1344,11 @@ function sweep(){
 			return a-b;
 		}); // .sort() is to be predictable
 
+		var tile = field[triple[0]];
 		var animation = {
 			'fn': animationDisappear,
 			'timestamp': +new Date,
-			'tile': field[triple[0]]
+			'tile': tile
 		}
 
 		for (var j=triple.length; j--; ){
@@ -1368,7 +1369,7 @@ function sweep(){
 		animationDisappearSound = 1; // One sound flag for all animations
 
 		// Main tile cannot be equal 0. Supposedly.
-		addScore(cascade * 100 * 1 << (triple.length - 2), animation.q || triple[1]);
+		addScore(getTileGeneration(tile) * cascade * 100 * 1 << (triple.length - 2), animation.q || triple[1]);
 		shiftScenario = 1;
 	}
 
@@ -1495,7 +1496,7 @@ function explosion(){
 				}
 			}
 
-			addScore(getTileGeneration(explosiveTile) * 100, i);
+			addScore(getTileGeneration(explosiveTile) * 500, i);
 			shiftScenario = 1;
 		}
 	}
