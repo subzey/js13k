@@ -5,7 +5,7 @@ var path = require('path');
 var keep = ['start', 'startDemo', 'load'];
 var mangledNames = {};
 
-var html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
+var html = fs.readFileSync(path.join(__dirname, 'source.html'), 'utf-8');
 html = html.replace(/\r\n/g, '\n');
 html = html.replace(/(<script[^>]*>)([^]*?)(<\/script>)/g, function(_, openTag, content, closeTag){
 	var uglifyjs;
@@ -49,7 +49,4 @@ html = html.replace(/(onclick=)((["']).*?\2|[^>\s*]*)/g, function(_, attr, oncli
 	return attr + onclickStr;
 });
 
-try {
-	fs.mkdirSync(path.join(__dirname, 'build'));
-} catch (e){}
-fs.writeFileSync(path.join(__dirname, 'build', 'index.html'), html);
+fs.writeFileSync(path.join(__dirname, 'index.html'), html);
