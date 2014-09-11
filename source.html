@@ -197,16 +197,18 @@ function resize(){
 		// Upscale only by multipliers of two
 		scale = (scale << 1) >> 1;
 	}
-	if (
-		!['transform', '-webkit-transform', '-moz-transform', '-o-transfrom', '-ms-transform'].some(function(k){
-			if (k in w.style){
-				w.style[k+'-origin'] = '362px 0';
-				return w.style[k] = scale ^ 1 ? 'scale(' + scale + ')' : '';
-			}
-		})
-	){
+	var props = ['WebkitTransform', 'MozTransform', 'OTransfrom', 'MsTransform', 'transform'];
+
+	var fallback = 1;
+	for (var i=5; i--;){
+		if (props[i] in w.style){
+			fallback = 0;
+			w.style[props[i]+'Origin'] = (scale ^ 1) ? '362px 0' : '';
+			w.style[props[i]] = (scale ^ 1) ? 'scale(' + scale + ')' : '';
+		}
+	}
+	if (fallback){
 		scale = 1;
-		// Fall back. CSS tranform is not supported
 	}
 	scaledSize = contentWidth * scale;
 	scaledTop = 36 * scale; // Score div height
