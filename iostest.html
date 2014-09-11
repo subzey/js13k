@@ -13,4 +13,6 @@ html, body {height: 100%; width: 100%; margin: 0}
 			'document.body.clientHeight ' + document.body.clientHeight
 		)
 	}, 1000);
+	window.onresize = function(){alert('resize')};
+	window.onorientationchange = function(){alert('orientationchange')};
 </script>
