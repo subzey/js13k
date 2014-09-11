@@ -187,6 +187,11 @@ function resize(){
 	var contentHeight = 760;
 	var viewportWidth = document.documentElement.clientWidth;
 	var viewportHeight = document.documentElement.clientHeight;
+	if (/(iPad|iPhone).*OS\s+7/.test(navigator.userAgent)){
+		// document.documentElement metrics are not reliable on ios 7
+		viewportHeight = window.innerHeight;
+		viewportWidth = window.innerWidth;
+	}
 	scale = Math.min(viewportWidth / contentWidth, viewportHeight / contentHeight);
 	if (scale > 1){
 		// Upscale only by multipliers of two
